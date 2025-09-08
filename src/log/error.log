@@ -1,0 +1,19 @@
+{"level":"error","message":"Error al intentar generar una nueva terminal. Column 'idCliente' cannot be null","timestamp":"2024-09-23T19:22:35.962Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Column 'idCliente' cannot be null","timestamp":"2024-09-24T13:36:48.924Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Column 'idCliente' cannot be null","timestamp":"2024-09-24T13:37:27.709Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Column 'idCliente' cannot be null","timestamp":"2024-09-24T13:38:26.698Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:39:17.431Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:40:34.193Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:42:09.194Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:42:54.536Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:43:33.835Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. undefined","timestamp":"2024-09-24T13:44:12.491Z"}
+{"level":"error","message":"Error al intentar obtener la terminal del cliente. Unknown column 'habilitada' in 'field list'","timestamp":"2024-09-30T21:25:13.627Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Table 'dbadminserver.cliente' doesn't exist","timestamp":"2024-09-30T21:41:22.536Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1","timestamp":"2024-09-30T21:49:04.012Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Cannot read properties of undefined (reading 'id')","timestamp":"2024-09-30T21:50:47.597Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Unknown column 'sincronizado' in 'field list'","timestamp":"2024-10-01T00:16:20.730Z"}
+{"level":"error","message":"Error al intentar generar una nueva terminal. Table 'dbadminserver.cliente' doesn't exist","timestamp":"2024-10-03T15:26:45.752Z"}
+{"level":"error","message":"Error al intentar obtener la versión de la aplicación 1 Unknown column 'link' in 'field list'","timestamp":"2024-10-08T12:22:09.495Z"}
+{"level":"error","message":"Error al intentar generar una nueva app para el cliente. Column count doesn't match value count at row 1","timestamp":"2024-10-11T01:57:21.316Z"}
+{"level":"error","message":"Error al intentar generar una nueva app para el cliente. Column 'mac' cannot be null","timestamp":"2024-10-11T12:42:27.677Z"}

@@ -1,0 +1,20 @@
+{
+    "dev": {
+      "port": 5000,
+      "db": {
+        "host": "127.0.0.1",
+        "user": "root",
+        "password": "",
+        "database": "dbadminserver"
+      }
+    },
+    "prod": {
+      "port": 5000,
+      "db": {
+        "host": "127.0.0.1",
+        "user": "adminserver",
+        "password": "ExhcZhcnwa3JPYaa",
+        "database": "dbadminserver"
+      }
+    }
+  }
