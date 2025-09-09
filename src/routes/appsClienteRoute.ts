@@ -37,6 +37,16 @@ router.post('/generar', async (req:Request, res:Response) => {
     }
 });
 
+router.put('/informar/:dni/:idApp/:version', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsClienteRepo.InformarActualizacion(req.params.dni, req.params.idApp, req.params.version));
+    } catch(error:any){
+        let msg = "Error al intentar informar la versión de la app.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
 
 // Export the router
 export default router; 

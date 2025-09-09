@@ -4,17 +4,39 @@ import logger from '../log/logger';
 const router : Router  = Router();
 
 //#region OBTENER
-router.get('/obtener/:idApp', async (req:Request, res:Response) => {
+router.get('/obtener', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsRepo.ObtenerVersion(req.params.idApp));
+        res.json(await AppsRepo.ObtenerAplicaciones());
 
     } catch(error:any){
-        let msg = "Error al intentar obtener la versión de la aplicación " + req.params.idApp;
+        let msg = "Error al intentar obtener las aplicaciones.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+router.get('/obtener/:idApp', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsRepo.ObtenerAplicacion(req.params.idApp));
+
+    } catch(error:any){
+        let msg = "Error al intentar obtener la aplicación nro " + req.params.idApp;
         logger.error(msg + " " + error.message);
         res.status(500).send(msg);
     }
 });
 //#endregion
+
+router.put('/actualizar', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsRepo.Actualizar(req.body));
+
+    } catch(error:any){
+        let msg = "Error al intentar actualizar la aplicación.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
 
 // Export the router
 export default router; 

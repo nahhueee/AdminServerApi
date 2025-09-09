@@ -10,7 +10,7 @@ class AppsClienteRepository{
                            "INNER JOIN clientes c on ac.DNI = c.DNI " +
                            "WHERE ac.DNI = ? && ac.idApp = ? ";
 
-            const rows = await connection.query(consulta, [data.dni, data.idApp, data.mac]);
+            const rows = await connection.query(consulta, [data.dni, data.idApp]);
             if(rows[0][0]){
                 if(rows[0][0].mac == data.mac) //Existe la terminal y se está conectando de la maquina correcta
                     return rows[0][0]
@@ -65,6 +65,28 @@ class AppsClienteRepository{
             }
 
             return null;
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async InformarActualizacion(DNI:string, idApp:string, version:string): Promise<any>{
+        const connection = await db.getConnection();
+        
+        try {
+            const consulta = "UPDATE apps_cliente SET " + 
+                             "version = ?, " +
+                             "actualizacion = NOW() " +
+                             "WHERE DNI = ? && idApp = ? ";
+
+            const parametros = [version, DNI, idApp];
+            
+            await connection.query(consulta, parametros);
+
+            return "OK";
 
         } catch (error:any) {
             throw error;
