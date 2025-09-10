@@ -4,6 +4,18 @@ import logger from '../log/logger';
 const router : Router  = Router();
 
 //#region OBTENER
+router.post('/obtener', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await ClienteRepo.Obtener(req.body));
+
+    } catch(error:any){
+        let msg = "Error al obtener el listado de clientes.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+
 router.get('/obtener/:dni', async (req:Request, res:Response) => {
     try{ 
 

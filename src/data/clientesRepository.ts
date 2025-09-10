@@ -5,6 +5,27 @@ import { Cliente } from '../models/Cliente';
 
 class ClientesRepository{
 
+     async Obtener(filtros:any){
+        const connection = await db.getConnection();
+        
+        try {
+             //Obtengo la query segun los filtros
+            let queryRegistros = await ObtenerQuery(filtros,false);
+            let queryTotal = await ObtenerQuery(filtros,true);
+
+            //Obtengo la lista de registros y el total
+            const rows = await connection.query(queryRegistros);
+            const resultado = await connection.query(queryTotal);
+
+            return {total:resultado[0][0].total, registros:rows[0]};
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
     async ObtenerCliente(DNI:string){
         const connection = await db.getConnection();
         
