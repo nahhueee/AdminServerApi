@@ -19,3 +19,4 @@
 {"level":"error","message":"Error al intentar generar una nueva app para el cliente. Column 'mac' cannot be null","timestamp":"2024-10-11T12:42:27.677Z"}
 {"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: YES)","timestamp":"2025-09-10T01:27:30.284Z"}
 {"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: YES)","timestamp":"2025-09-10T01:27:30.289Z"}
+{"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-10T11:06:43.872Z"}

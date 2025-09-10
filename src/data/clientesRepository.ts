@@ -26,14 +26,14 @@ class ClientesRepository{
         }
     }
 
-    async ObtenerCliente(DNI:string){
+    async ObtenerCliente(idCliente:string){
         const connection = await db.getConnection();
         
         try {
             let consulta = "SELECT * FROM clientes " +
-                           "WHERE dni = ? ";
+                           "WHERE id = ? ";
 
-            const rows = await connection.query(consulta, [DNI]);
+            const rows = await connection.query(consulta, [idCliente]);
             const row = rows[0][0];
             let cliente:Cliente = new Cliente({
                 id: row['id'],
@@ -44,7 +44,7 @@ class ClientesRepository{
                 fechaAlta: row['fechaAlta']
             });
 
-            cliente.apps = await ObtenerApps(connection, DNI);
+            cliente.apps = await ObtenerApps(connection, cliente.DNI!);
             
             return cliente;
 
@@ -54,6 +54,66 @@ class ClientesRepository{
             connection.release();
         }
     }
+
+    //#region ABM
+    async Agregar(data:any): Promise<string>{
+        const connection = await db.getConnection();
+        
+        try {
+            let existe = await ValidarExistencia(connection, data, false);
+            if(existe)//Verificamos si ya existe un cliente con el mismo DNI 
+                return "Ya existe un cliente con el mismo DNI.";
+            
+            const consulta = "INSERT INTO clientes(DNI, nombre, email, descripcion, fechaAlta) VALUES (?,?,?,?,NOW())";
+            const parametros = [data.DNI, data.nombre.toUpperCase(), data.email, data.descripcion];
+            
+            await connection.query(consulta, parametros);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async Modificar(data:any): Promise<string>{
+        const connection = await db.getConnection();
+        
+        try {
+            let existe = await ValidarExistencia(connection, data, true);
+            if(existe)//Verificamos si ya existe un cliente con el mismo DNI 
+                return "Ya existe un cliente con el mismo DNI.";
+            
+            const consulta = `UPDATE clientes 
+                            SET DNI = ?, nombre = ?, email = ?, descripcion = ?
+                            WHERE id = ? `;
+
+            const parametros = [data.DNI, data.nombre.toUpperCase(), data.email, data.descripcion, data.id];
+            await connection.query(consulta, parametros);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async Eliminar(id:string): Promise<string>{
+        const connection = await db.getConnection();
+        
+        try {
+            await connection.query("UPDATE clientes SET fechaBaja = NOW() WHERE id = ?", [id]);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+    //#endregion
 }
 
 async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
@@ -138,6 +198,22 @@ async function ObtenerApps(connection, DNI:string){
         throw error; 
     }
     
+}
+
+async function ValidarExistencia(connection, data:any, modificando:boolean):Promise<boolean>{
+    try {
+        let consulta = " SELECT id FROM clientes WHERE DNI = ? ";
+        if(modificando) consulta += " AND id <> ? ";
+
+        const parametros = [data.DNI, data.id];
+
+        const rows = await connection.query(consulta,parametros);
+        if(rows[0].length > 0) return true;
+
+        return false;
+    } catch (error) {
+        throw error; 
+    }
 }
 
 export const ClienteRepo = new ClientesRepository();

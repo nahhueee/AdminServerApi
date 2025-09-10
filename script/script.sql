@@ -11,6 +11,7 @@ CREATE TABLE clientes (
     email VARCHAR(50),
     descripcion VARCHAR(80),
     fechaAlta DATE,
+    fechaBaja DATE,
    
     PRIMARY KEY(id,DNI)
 );
