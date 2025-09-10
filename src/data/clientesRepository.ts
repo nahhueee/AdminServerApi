@@ -35,6 +35,51 @@ class ClientesRepository{
     }
 }
 
+async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
+    try {
+        //#region VARIABLES
+        let query:string;
+        let filtro:string = "";
+        let paginado:string = "";
+    
+        let count:string = "";
+        let endCount:string = "";
+        //#endregion
+
+        // #region FILTROS
+        if (filtros.busqueda != null && filtros.busqueda != "") 
+            filtro += " WHERE c.nombre LIKE '%"+ filtros.busqueda + "%' ";
+        if (filtros.idCliente != null && filtros.idCliente != 0) 
+            filtro += " WHERE c.id = "+ filtros.idCliente;
+        // #endregion
+
+        if (esTotal)
+        {//Si esTotal agregamos para obtener un total de la consulta
+            count = "SELECT COUNT(*) AS total FROM ( ";
+            endCount = " ) as subquery";
+        }
+        else
+        {//De lo contrario paginamos
+            if (filtros.tamanioPagina != null)
+                paginado = " LIMIT " + filtros.tamanioPagina + " OFFSET " + ((filtros.pagina - 1) * filtros.tamanioPagina);
+        }
+            
+        //Arma la Query con el paginado y los filtros correspondientes
+        query = count +
+            " SELECT c.* " +
+            " FROM clientes c" +
+            filtro +
+            " ORDER BY c.id DESC" +
+            paginado +
+            endCount;
+
+        return query;
+            
+    } catch (error) {
+        throw error; 
+    }
+}
+
 async function ObtenerApps(connection, DNI:string){
     try {
         const consulta = "SELECT ac.*, a.nombre nombreApp, a.version versionApp, a.id idApp FROM apps_cliente ac " +
@@ -71,6 +116,7 @@ async function ObtenerApps(connection, DNI:string){
     } catch (error) {
         throw error; 
     }
+    
 }
 
 export const ClienteRepo = new ClientesRepository();

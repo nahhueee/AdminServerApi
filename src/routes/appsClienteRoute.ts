@@ -37,9 +37,10 @@ router.post('/generar', async (req:Request, res:Response) => {
     }
 });
 
-router.put('/informar/:dni/:idApp/:version', async (req:Request, res:Response) => {
+//Informa al servidor la versión actual del sistema para la terminal
+router.put('/informar', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsClienteRepo.InformarActualizacion(req.params.dni, req.params.idApp, req.params.version));
+        res.json(await AppsClienteRepo.InformarActualizacion(req.body.dni, req.body.idApp, req.body.version));
     } catch(error:any){
         let msg = "Error al intentar informar la versión de la app.";
         logger.error(msg + " " + error.message);

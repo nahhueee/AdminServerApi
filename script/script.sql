@@ -21,6 +21,8 @@ CREATE TABLE apps_cliente (
     DNI INT,
     mac VARCHAR(20),
     idApp INT,
+    version VARCHAR(8),
+    actualizacion DATETIME,
     habilitado BOOLEAN,
 
     PRIMARY KEY(terminal, DNI, mac, idApp)
@@ -32,7 +34,8 @@ CREATE TABLE aplicaciones (
     nombre VARCHAR(20),
     version VARCHAR(8),
     link VARCHAR(30),
-    info VARCHAR(800)
+    info VARCHAR(800),
+    estado VARCHAR(10)
 );
 
 
