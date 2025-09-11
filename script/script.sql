@@ -50,5 +50,5 @@ CREATE TABLE aplicaciones (
 );
 
 
-INSERT INTO aplicaciones(nombre, portada, version, link, info) VALUES ('Easy Sales', 'https://www.dropbox.com/scl/fi/m3g9ejqjlg3y04mp9g7lb/EasySalesLogo.png?rlkey=s64u72mj8mvhbtmlr5l1rx1vm&st=816wpv5c&dl=0', '1.0.0', '', ''), ('Easy Resto', 'https://www.dropbox.com/scl/fi/a4v2heionq4xq8yvevj6q/EasyRestoLogo.png?rlkey=qlmo18ctye2ingdz4vsmbx2y8&st=5429wsts&dl=0', '1.0.0', '', '');
+INSERT INTO aplicaciones(nombre, portada, version, link, info) VALUES ('Easy Sales', 'https://www.dropbox.com/scl/fi/m3g9ejqjlg3y04mp9g7lb/EasySalesLogo.png?rlkey=s64u72mj8mvhbtmlr5l1rx1vm&st=816wpv5c&dl=1', '1.0.0', '', ''), ('Easy Resto', 'https://www.dropbox.com/scl/fi/a4v2heionq4xq8yvevj6q/EasyRestoLogo.png?rlkey=qlmo18ctye2ingdz4vsmbx2y8&st=5429wsts&dl=1', '1.0.0', '', '');
 
