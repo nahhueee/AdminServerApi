@@ -15,9 +15,9 @@ router.get('/obtener', async (req:Request, res:Response) => {
     }
 });
 
-router.get('/obtener/:idApp', async (req:Request, res:Response) => {
+router.get('/obtener/:id', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsRepo.ObtenerAplicacion(req.params.idApp));
+        res.json(await AppsRepo.ObtenerAplicacion(req.params.id));
 
     } catch(error:any){
         let msg = "Error al intentar obtener la aplicación nro " + req.params.idApp;

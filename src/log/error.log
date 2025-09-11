@@ -22,3 +22,6 @@
 {"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-10T11:06:43.872Z"}
 {"level":"error","message":"Error al obtener el listado de pagos para el cliente. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND id DESC LIMIT 10 OFFSET 0' at line 1","timestamp":"2025-09-11T02:54:23.885Z"}
 {"level":"error","message":"Error al obtener el listado de pagos para el cliente. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND ORDER BY id DESC LIMIT 10 OFFSET 0' at line 1","timestamp":"2025-09-11T02:54:56.722Z"}
+{"level":"error","message":"Error al intentar obtener el cliente con DNI undefined Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:36:36.610Z"}
+{"level":"error","message":"Error al obtener el listado de pagos para el cliente. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:36:36.617Z"}
+{"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:37:38.727Z"}
