@@ -94,6 +94,23 @@ class AppsClienteRepository{
             connection.release();
         }
     }
+
+    async ActualizarEstadoTerminal(data:any){
+        const connection = await db.getConnection();
+        try {
+            let consulta = "UPDATE apps_cliente SET " + 
+                           "habilitado = ? " +
+                           "WHERE DNI = ? && idApp = ?";
+
+            await connection.query(consulta, [data.habilitado ? 1 : 0, data.DNI, data.idApp]);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
 }
 
 async function ValidarExistencia(connection, data:any):Promise<boolean>{

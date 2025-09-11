@@ -41,7 +41,7 @@ class AplicacionesRepository{
         }
     }
 
-    async Actualizar(aplicacion:App){
+    async Modificar(aplicacion:App){
         const connection = await db.getConnection();
         
         try {

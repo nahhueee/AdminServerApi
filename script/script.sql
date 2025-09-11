@@ -16,6 +16,15 @@ CREATE TABLE clientes (
     PRIMARY KEY(id,DNI)
 );
 
+DROP TABLE IF EXISTS pagos_cliente;
+CREATE TABLE pagos_cliente (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    idCliente INT,
+    monto DECIMAL(10,2),
+    fecha DATE,
+    obs VARCHAR(50)
+);
+
 DROP TABLE IF EXISTS apps_cliente;
 CREATE TABLE apps_cliente (
     terminal INT UNSIGNED AUTO_INCREMENT,

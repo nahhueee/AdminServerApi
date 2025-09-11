@@ -24,10 +24,12 @@ import appsClienteRoute from './routes/appsClienteRoute';
 import clientesRoute from './routes/clientesRoute';
 import appsRoute from './routes/aplicacionesRoute';
 import backupsRoute from './routes/backupsRoute';
+import pagosCliRoute from './routes/pagosClienteRoute';
 
 app.use('/adminserver/appscliente', appsClienteRoute);
 app.use('/adminserver/clientes', clientesRoute);
 app.use('/adminserver/apps', appsRoute);
+app.use('/adminserver/pagoscliente', pagosCliRoute);
 app.use('/adminserver/backups', backupsRoute);
 //#endregion
 

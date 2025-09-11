@@ -27,12 +27,12 @@ router.get('/obtener/:idApp', async (req:Request, res:Response) => {
 });
 //#endregion
 
-router.put('/actualizar', async (req:Request, res:Response) => {
+router.put('/modificar', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsRepo.Actualizar(req.body));
+        res.json(await AppsRepo.Modificar(req.body));
 
     } catch(error:any){
-        let msg = "Error al intentar actualizar la aplicación.";
+        let msg = "Error al intentar modificar la aplicación.";
         logger.error(msg + " " + error.message);
         res.status(500).send(msg);
     }

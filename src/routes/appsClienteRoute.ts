@@ -48,6 +48,17 @@ router.put('/informar', async (req:Request, res:Response) => {
     }
 });
 
+router.put('/actualizar-estado', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsClienteRepo.ActualizarEstadoTerminal(req.body));
+
+    } catch(error:any){
+        let msg = "Error al intentar actualizar el estado de la terminal.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
 
 // Export the router
 export default router; 

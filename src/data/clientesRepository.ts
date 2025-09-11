@@ -197,7 +197,6 @@ async function ObtenerApps(connection, DNI:string){
     } catch (error) {
         throw error; 
     }
-    
 }
 
 async function ValidarExistencia(connection, data:any, modificando:boolean):Promise<boolean>{
