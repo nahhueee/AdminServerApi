@@ -16,10 +16,10 @@ router.post('/obtener', async (req:Request, res:Response) => {
 });
 
 
-router.get('/obtener-cliente/:id', async (req:Request, res:Response) => {
+router.get('/obtener/:dni', async (req:Request, res:Response) => {
     try{ 
 
-        const resultado = await ClienteRepo.ObtenerCliente(req.params.id)
+        const resultado = await ClienteRepo.ObtenerCliente(req.params.dni)
         res.json(resultado);
 
     } catch(error:any){

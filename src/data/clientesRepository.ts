@@ -26,14 +26,14 @@ class ClientesRepository{
         }
     }
 
-    async ObtenerCliente(idCliente:string){
+    async ObtenerCliente(DNI:string){
         const connection = await db.getConnection();
         
         try {
             let consulta = "SELECT * FROM clientes " +
-                           "WHERE id = ? ";
+                           "WHERE dni = ? ";
 
-            const rows = await connection.query(consulta, [idCliente]);
+            const rows = await connection.query(consulta, [DNI]);
             const row = rows[0][0];
             let cliente:Cliente = new Cliente({
                 id: row['id'],
@@ -44,7 +44,7 @@ class ClientesRepository{
                 fechaAlta: row['fechaAlta']
             });
 
-            cliente.apps = await ObtenerApps(connection, cliente.DNI!);
+            cliente.apps = await ObtenerApps(connection, DNI);
             
             return cliente;
 
