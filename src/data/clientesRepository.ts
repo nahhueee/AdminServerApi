@@ -14,10 +14,27 @@ class ClientesRepository{
             let queryTotal = await ObtenerQuery(filtros,true);
 
             //Obtengo la lista de registros y el total
-            const rows = await connection.query(queryRegistros);
+            const [rows] = await connection.query(queryRegistros);
             const resultado = await connection.query(queryTotal);
 
-            return {total:resultado[0][0].total, registros:rows[0]};
+            const clientes:Cliente[] = [];
+            if (Array.isArray(rows)) {
+                for (let i = 0; i < rows.length; i++) { 
+                    const row = rows[i];
+                    
+                    let cliente:Cliente = new Cliente();
+                    cliente.id = row['id'];
+                    cliente.nombre = row['nombre'];
+                    cliente.DNI = row['DNI'];
+                    cliente.email = row['email'];
+                    cliente.descripcion = row['descripcion'];
+                    cliente.fechaAlta = row['fechaAlta'];
+                    cliente.apps = await ObtenerApps(connection, cliente.DNI!);
+                    clientes.push(cliente)
+                }
+            }
+
+            return {total:resultado[0][0].total, registros:clientes};
 
         } catch (error:any) {
             throw error;
@@ -34,6 +51,9 @@ class ClientesRepository{
                            "WHERE dni = ? ";
 
             const rows = await connection.query(consulta, [DNI]);
+
+            if(rows[0][0] == undefined) return null;
+
             const row = rows[0][0];
             let cliente:Cliente = new Cliente({
                 id: row['id'],
@@ -184,7 +204,7 @@ async function ObtenerApps(connection, DNI:string){
                 aplicacion.app = new App({
                     id: row['idApp'],
                     nombre: row['nombreApp'],
-                    version: row['versionApp'],
+                    version: await ObtenerUltimaVersion(connection, row['idApp'])
                 });
 
 
@@ -196,6 +216,20 @@ async function ObtenerApps(connection, DNI:string){
 
     } catch (error) {
         throw error; 
+    }
+}
+
+async function ObtenerUltimaVersion(connection, idApp) {
+    try {
+        let consulta = "SELECT version FROM actualizaciones WHERE idApp = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+        const rows = await connection.query(consulta, [idApp]);
+        if(rows[0] && rows[0].length > 0){
+            return rows[0][0].version;
+        }else{
+            return "1.0.0";
+        }
+    }catch(error){
+        throw error;
     }
 }
 

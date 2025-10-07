@@ -25,12 +25,14 @@ import clientesRoute from './routes/clientesRoute';
 import appsRoute from './routes/aplicacionesRoute';
 import backupsRoute from './routes/backupsRoute';
 import pagosCliRoute from './routes/pagosClienteRoute';
+import actualizacionesRoute from './routes/actualizacionesRoute';
 
 app.use('/adminserver/appscliente', appsClienteRoute);
 app.use('/adminserver/clientes', clientesRoute);
 app.use('/adminserver/apps', appsRoute);
 app.use('/adminserver/pagoscliente', pagosCliRoute);
 app.use('/adminserver/backups', backupsRoute);
+app.use('/adminserver/actualizaciones', actualizacionesRoute);
 //#endregion
 
 //Index Route

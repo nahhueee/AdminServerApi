@@ -27,16 +27,5 @@ router.get('/obtener/:id', async (req:Request, res:Response) => {
 });
 //#endregion
 
-router.put('/modificar', async (req:Request, res:Response) => {
-    try{ 
-        res.json(await AppsRepo.Modificar(req.body));
-
-    } catch(error:any){
-        let msg = "Error al intentar modificar la aplicación.";
-        logger.error(msg + " " + error.message);
-        res.status(500).send(msg);
-    }
-});
-
 // Export the router
 export default router; 

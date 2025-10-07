@@ -25,3 +25,27 @@
 {"level":"error","message":"Error al intentar obtener el cliente con DNI undefined Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:36:36.610Z"}
 {"level":"error","message":"Error al obtener el listado de pagos para el cliente. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:36:36.617Z"}
 {"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'root'@'localhost' (using password: NO)","timestamp":"2025-09-11T11:37:38.727Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Access denied for user 'adminserver'@'localhost' (using password: YES)","timestamp":"2025-09-21T16:43:09.664Z"}
+{"level":"error","message":"Error al obtener el listado de clientes. Access denied for user 'adminserver'@'localhost' (using password: YES)","timestamp":"2025-09-21T16:43:11.919Z"}
+{"level":"error","message":"Error al intentar agregar la actualizacion. Table 'dbadminserver.actualizaciones' doesn't exist","timestamp":"2025-09-26T04:21:27.422Z"}
+{"level":"error","message":"Error al intentar agregar la actualizacion. Incorrect date value: '2025-09-26T04:22:25.805Z' for column 'fecha' at row 1","timestamp":"2025-09-26T04:22:25.842Z"}
+{"level":"error","message":"Error al intentar agregar la actualizacion. Incorrect date value: '2025-09-26T04:24:08.790Z' for column 'fecha' at row 1","timestamp":"2025-09-26T04:24:09.069Z"}
+{"level":"error","message":"Error al intentar agregar la actualizacion. Incorrect date value: '2025-09-26T04:24:33.577Z' for column 'fecha' at row 1","timestamp":"2025-09-26T04:24:33.592Z"}
+{"level":"error","message":"Error al obtener el listado de pagos para el cliente. Unknown column 'dni' in 'where clause'","timestamp":"2025-09-26T12:46:30.121Z"}
+{"level":"error","message":"Error al obtener el listado de pagos para el cliente. Unknown column 'dni' in 'where clause'","timestamp":"2025-09-26T12:47:04.650Z"}
+{"level":"error","message":"Error al obtener el listado de pagos para el cliente. Column 'id' in order clause is ambiguous","timestamp":"2025-09-26T12:48:16.228Z"}
+{"level":"error","message":"Error al obtener el listado de pagos para el cliente. Unknown column 'c.fecha' in 'order clause'","timestamp":"2025-09-26T12:49:02.795Z"}
+{"level":"error","message":"Error al obtener la ultima version de la app. Access denied for user 'adminserver'@'localhost' (using password: YES)","timestamp":"2025-10-07T03:46:50.237Z"}
+{"level":"error","message":"Error al intentar obtener el cliente con DNI 18052825 Cannot read properties of undefined (reading 'id')","timestamp":"2025-10-07T04:08:28.663Z"}
+{"level":"error","message":"Error al intentar obtener el cliente con DNI 18052825 Cannot read properties of undefined (reading 'id')","timestamp":"2025-10-07T04:09:16.586Z"}
+{"level":"error","message":"Error al intentar obtener el cliente con DNI 18052825 Cannot read properties of undefined (reading 'id')","timestamp":"2025-10-07T04:09:50.158Z"}
+{"level":"error","message":"Error al intentar obtener el cliente con DNI 18052825 Cannot read properties of undefined (reading 'id')","timestamp":"2025-10-07T04:12:51.537Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Table 'dbadminserver.actualizacion' doesn't exist","timestamp":"2025-10-07T13:17:51.608Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Table 'dbadminserver.actualizacion' doesn't exist","timestamp":"2025-10-07T13:19:20.878Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Unknown column 'actualizacion.idApp' in 'where clause'","timestamp":"2025-10-07T13:20:02.491Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Expression #9 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'dbadminserver.act.version' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by","timestamp":"2025-10-07T13:20:24.880Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:28:50.903Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:29:17.997Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:29:33.328Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:31:23.799Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:33:05.744Z"}

@@ -87,8 +87,8 @@ async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
         //#endregion
 
         // #region FILTROS
-        if (filtros.idCliente != null && filtros.idCliente != 0) 
-            filtro += " WHERE idCliente = "+ filtros.idCliente;
+        if (filtros.DNICliente != null && filtros.DNICliente != 0) 
+            filtro += " WHERE dni = "+ filtros.DNICliente;
         // #endregion
 
         if (esTotal)
@@ -104,10 +104,11 @@ async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
             
         //Arma la Query con el paginado y los filtros correspondientes
         query = count +
-            " SELECT * " +
-            " FROM pagos_cliente " +
+            " SELECT pc.* " +
+            " FROM pagos_cliente pc " +
+            " INNER JOIN clientes c ON pc.idCliente = c.id " +
             filtro +
-            " ORDER BY fecha DESC, id DESC" +
+            " ORDER BY pc.fecha DESC, pc.id DESC" +
             paginado +
             endCount;
 

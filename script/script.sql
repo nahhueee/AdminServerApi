@@ -49,6 +49,23 @@ CREATE TABLE aplicaciones (
     estado VARCHAR(10)
 );
 
+DROP TABLE IF EXISTS actualizaciones;
+CREATE TABLE actualizaciones (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    idApp INT,
+    version VARCHAR(8),
+    link VARCHAR(200),
+    info VARCHAR(800),
+    estado VARCHAR(10),
+    resumen VARCHAR(200),
+    mejoras VARCHAR(400),
+    correcciones VARCHAR(400),
+    fecha DATE,
+    front INT
+);
+
+
+
 
 INSERT INTO aplicaciones(nombre, portada, version, link, info) VALUES ('Easy Sales', 'https://www.dropbox.com/scl/fi/m3g9ejqjlg3y04mp9g7lb/EasySalesLogo.png?rlkey=s64u72mj8mvhbtmlr5l1rx1vm&st=816wpv5c&dl=1', '1.0.0', '', ''), ('Easy Resto', 'https://www.dropbox.com/scl/fi/a4v2heionq4xq8yvevj6q/EasyRestoLogo.png?rlkey=qlmo18ctye2ingdz4vsmbx2y8&st=5429wsts&dl=1', '1.0.0', '', '');
 
