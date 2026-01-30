@@ -1,4 +1,5 @@
 import db from '../db';
+import { randomUUID } from 'crypto';
 
 class AppsClienteRepository{
 
@@ -47,6 +48,27 @@ class AppsClienteRepository{
             connection.release();
         }
     }
+
+    async TerminalHabilitada(data:any){
+        const connection = await db.getConnection();
+        try {
+            let consulta = "SELECT habilitado FROM apps_cliente " +
+                           "WHERE terminal = ? && idApp = ? && mac = ? ";
+
+            const rows = await connection.query(consulta, [data.terminal, data.idApp, data.mac]);
+            if(rows[0][0]){
+                if(rows[0][0].habilitado==1)
+                    return true;
+            }
+
+            return false;
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
  
     async GenerarAppCliente(data:any): Promise<any>{
         const connection = await db.getConnection();
@@ -54,8 +76,9 @@ class AppsClienteRepository{
         try {
             let existeAppCliente = await ValidarExistencia(connection, data);
             if(!existeAppCliente){//Verificamos si ya existe una app para este cliente
-                const consulta = "INSERT INTO apps_cliente(DNI, mac, idApp, habilitado) VALUES (?,?,?,?)";
-                const parametros = [data.dni, data.mac, data.idApp, 1];
+                const terminal = randomUUID();
+                const consulta = "INSERT INTO apps_cliente(DNI, mac, idApp, terminal, habilitado) VALUES (?,?,?,?,?)";
+                const parametros = [data.dni, data.mac, data.idApp, terminal, 1];
                 
                 //Insertamos la app 
                 await connection.query(consulta, parametros);

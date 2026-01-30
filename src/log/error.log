@@ -49,3 +49,8 @@
 {"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:29:33.328Z"}
 {"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:31:23.799Z"}
 {"level":"error","message":"Error al intentar obtener las aplicaciones. Cannot read properties of undefined (reading 'version')","timestamp":"2025-10-07T13:33:05.744Z"}
+{"level":"error","message":"Error al intentar obtener las aplicaciones. Unknown column 'fecha' in 'order clause'","timestamp":"2026-01-30T01:10:52.088Z"}
+{"level":"error","message":"Error al obtener el listado de actualizaciones de la app. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1","timestamp":"2026-01-30T01:13:50.841Z"}
+{"level":"error","message":"Error al obtener el listado de actualizaciones de la app. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1","timestamp":"2026-01-30T01:17:25.639Z"}
+{"level":"error","message":"Error al intentar agregar la actualizacion. Unknown column 'front' in 'field list'","timestamp":"2026-01-30T01:58:32.802Z"}
+{"level":"error","message":"Error al obtener el listado de clientes. Unknown column 'fecha' in 'order clause'","timestamp":"2026-01-30T02:25:05.998Z"}

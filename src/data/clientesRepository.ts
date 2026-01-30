@@ -221,7 +221,7 @@ async function ObtenerApps(connection, DNI:string){
 
 async function ObtenerUltimaVersion(connection, idApp) {
     try {
-        let consulta = "SELECT version FROM actualizaciones WHERE idApp = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+        let consulta = "SELECT version FROM actualizaciones WHERE idApp = ? ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
         const rows = await connection.query(consulta, [idApp]);
         if(rows[0] && rows[0].length > 0){
             return rows[0][0].version;

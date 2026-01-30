@@ -1,6 +1,7 @@
 import {ActualizacionRepo} from '../data/actualizacionesRepository';
 import {Router, Request, Response} from 'express';
 import logger from '../log/logger';
+import { AppsClienteRepo } from '../data/appsClienteRepository';
 const router : Router  = Router();
 
 //#region OBTENER
@@ -18,6 +19,26 @@ router.post('/obtener', async (req:Request, res:Response) => {
 router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
     try{ 
         res.json(await ActualizacionRepo.ObtenerUltimaVersionApp(req.params.idApp));
+
+    } catch(error:any){
+        let msg = "Error al obtener la ultima version de la app.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+router.get('/ultima-version-backend/:idApp/:ambiente/:terminal/:mac', async (req:Request, res:Response) => {
+    try{ 
+
+        const habilitado = await AppsClienteRepo.EstaHabilitado({terminal:req.params.terminal, idApp:req.params.idApp, mac: req.params.mac});
+        if(habilitado){
+            res.json(await ActualizacionRepo.ObtenerUltimaVersion(req.params.idApp, req.params.ambiente, "backend"));
+        }else{
+            return res.status(403).json({
+                error: true,
+                mensaje: 'Terminal no habilitada para actualizar'
+            });
+        }
 
     } catch(error:any){
         let msg = "Error al obtener la ultima version de la app.";

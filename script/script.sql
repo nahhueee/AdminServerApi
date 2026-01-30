@@ -27,7 +27,8 @@ CREATE TABLE pagos_cliente (
 
 DROP TABLE IF EXISTS apps_cliente;
 CREATE TABLE apps_cliente (
-    terminal INT UNSIGNED AUTO_INCREMENT,
+    id INT UNSIGNED AUTO_INCREMENT,
+    terminal VARCHAR(36),
     DNI INT,
     mac VARCHAR(20),
     idApp INT,
@@ -54,14 +55,14 @@ CREATE TABLE actualizaciones (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     idApp INT,
     version VARCHAR(8),
+    tipo ENUM('backend','frontend') NOT NULL,
+    estado ENUM('borrador','publicada','deshabilitada') NOT NULL,
+    ambiente ENUM('prod','test') NOT NULL,
     link VARCHAR(200),
-    info VARCHAR(800),
-    estado VARCHAR(10),
     resumen VARCHAR(200),
     mejoras VARCHAR(400),
     correcciones VARCHAR(400),
-    fecha DATE,
-    front INT
+    fecha_publicacion  DATE
 );
 
 

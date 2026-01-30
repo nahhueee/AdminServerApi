@@ -1,10 +1,11 @@
 import moment from 'moment';
 import db from '../db';
 import { Actualizacion } from '../models/Actualizacion';
+import { FiltroActualizacion } from '../models/Filtros/FiltroActualizacion';
 
 class ActualizacionesRepository{
 
-    async Obtener(filtros:any){
+     async Obtener(filtros:any){
         const connection = await db.getConnection();
         
         try {
@@ -15,29 +16,7 @@ class ActualizacionesRepository{
             //Obtengo la lista de registros y el total
             const [rows] = await connection.query(queryRegistros);
             const resultado = await connection.query(queryTotal);
-
-            const actualizaciones:Actualizacion[] = [];
-
-            if (Array.isArray(rows)) {
-                for (let i = 0; i < rows.length; i++) { 
-                    const row = rows[i];
-                    
-                    let actualizacion:Actualizacion = new Actualizacion();
-                    actualizacion.id = row['id'];
-                    actualizacion.resumen = row['resumen'];
-                    actualizacion.mejoras = row['mejoras'];
-                    actualizacion.correcciones = row['correcciones'];
-                    actualizacion.version = row['version'];
-                    actualizacion.link = row['link'];
-                    actualizacion.front = row['front'] == 1 ? true : false;
-                    actualizacion.fecha = row['fecha'];
-                    actualizacion.estado = row['estado'];
-
-                    actualizaciones.push(actualizacion)
-                }
-            }
-
-            return {total:resultado[0][0].total, registros:actualizaciones};
+            return {total:resultado[0][0].total, registros:[rows][0]};
 
         } catch (error:any) {
             throw error;
@@ -50,28 +29,35 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
         
         try {
-             //Obtengo la query segun los filtros
-            let queryRegistros = await ObtenerQuery({idApp},false);
+            const filtro = new FiltroActualizacion();
+            filtro.idApp = idApp;
+
+            //Obtengo la query segun los filtros
+            let queryRegistros = await ObtenerQuery(filtro,false);
 
             //Obtengo la lista de registros y el total
             const [rows] = await connection.query(queryRegistros);
+            return rows[0];
 
-            let actualizacion:Actualizacion = new Actualizacion();
-            if (Array.isArray(rows)) {
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
 
-                const row = rows[0];
-                actualizacion.id = row['id'];
-                actualizacion.resumen = row['resumen'];
-                actualizacion.mejoras = row['mejoras'];
-                actualizacion.correcciones = row['correcciones'];
-                actualizacion.version = row['version'];
-                actualizacion.link = row['link'];
-                actualizacion.front = row['front'] == 1 ? true : false;
-                actualizacion.fecha = row['fecha'];
-                actualizacion.estado = row['estado'];
-            }
+    async ObtenerUltimaVersion(idApp, ambiente, tipo){
+        const connection = await db.getConnection();
+        
+        try {
+            //Obtengo la query segun los filtros
+            let sql = "SELECT version, link, resumen, mejoras, correcciones, fecha_publicacion, ambiente " +
+                      "FROM actualizaciones " +
+                      "WHERE idApp = ? AND ambiente = ? AND tipo = ? AND estado = 'publicada' " +
+                      "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
 
-            return actualizacion;
+            const [rows] = await connection.query(sql, [idApp, ambiente, tipo]);
+            return [rows][0];
 
         } catch (error:any) {
             throw error;
@@ -85,8 +71,8 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
 
         try {
-            const consulta = "INSERT INTO actualizaciones(idApp, resumen, mejoras, correcciones, version, link, front, fecha, estado) VALUES (?,?,?,?,?,?,?,?,?)";
-            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.front ? 1 : 0, moment(data.fecha).format('YYYY-MM-DD'), data.estado];
+            const consulta = "INSERT INTO actualizaciones(idApp, resumen, mejoras, correcciones, version, link, ambiente, fecha_publicacion, estado, tipo) VALUES (?,?,?,?,?,?,?,?,?,?)";
+            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.ambiente, moment(data.fecha_publicacion).format('YYYY-MM-DD'), data.estado, data.tipo];
             
             await connection.query(consulta, parametros);
             return "OK";
@@ -102,8 +88,8 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
         
         try {
-            const consulta = "UPDATE actualizaciones SET idApp = ?, resumen = ?, mejoras = ?, correcciones = ?, version = ?, link = ?, front = ?, fecha = ?, estado = ? WHERE id = ?";
-            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.front ? 1 : 0, moment(data.fecha).format('YYYY-MM-DD'), data.estado, data.id];  
+            const consulta = "UPDATE actualizaciones SET idApp = ?, resumen = ?, mejoras = ?, correcciones = ?, version = ?, link = ?, ambiente = ?, fecha_publicacion = ?, estado = ?, tipo = ? WHERE id = ?";
+            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.ambiente, moment(data.fecha_publicacion).format('YYYY-MM-DD'), data.estado, data.tipo, data.id];  
             await connection.query(consulta, parametros);
             return "OK";
         } catch (error:any) {
@@ -129,7 +115,7 @@ class ActualizacionesRepository{
     //#endregion
 }
 
-async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
+async function ObtenerQuery(filtros:FiltroActualizacion,esTotal:boolean):Promise<string>{
     try {
         //#region VARIABLES
         let query:string;
@@ -141,8 +127,14 @@ async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
         //#endregion
 
         // #region FILTROS
-        if (filtros.idApp != null && filtros.idApp != 0) 
-            filtro += " WHERE idApp = "+ filtros.idApp;
+        if (filtros.idApp && filtros.idApp != 0) 
+            filtro += " AND idApp = " + filtros.idApp;
+        if(filtros.ambiente && filtros.ambiente != "")
+            filtro += " AND ambiente = '" + filtros.ambiente +"'";
+        if(filtros.estado && filtros.estado != "")
+            filtro += " AND estado = '" + filtros.estado +"'";
+        if(filtros.tipo && filtros.tipo != "")
+            filtro += " AND tipo = '" + filtros.tipo +"'";
         // #endregion
 
         if (esTotal)
@@ -160,8 +152,9 @@ async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
         query = count +
             " SELECT * " +
             " FROM actualizaciones " +
+            " WHERE 1=1 " +
             filtro +
-            " ORDER BY fecha DESC, id DESC" +
+            " ORDER BY fecha_publicacion DESC, id DESC" +
             paginado +
             endCount;
 
