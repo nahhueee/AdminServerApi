@@ -27,10 +27,10 @@ router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
     }
 });
 
-router.get('/ultima-version-backend/:idApp/:ambiente/:terminal/:mac', async (req:Request, res:Response) => {
+router.get('/ultima-version-backend/:idApp/:ambiente/:terminal', async (req:Request, res:Response) => {
     try{ 
 
-        const habilitado = await AppsClienteRepo.EstaHabilitado({terminal:req.params.terminal, idApp:req.params.idApp, mac: req.params.mac});
+        const habilitado = await AppsClienteRepo.TerminalHabilitada({terminal:req.params.terminal, idApp:req.params.idApp});
         if(habilitado){
             res.json(await ActualizacionRepo.ObtenerUltimaVersion(req.params.idApp, req.params.ambiente, "backend"));
         }else{

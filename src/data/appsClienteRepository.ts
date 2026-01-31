@@ -53,9 +53,9 @@ class AppsClienteRepository{
         const connection = await db.getConnection();
         try {
             let consulta = "SELECT habilitado FROM apps_cliente " +
-                           "WHERE terminal = ? && idApp = ? && mac = ? ";
+                           "WHERE terminal = ? && idApp = ? ";
 
-            const rows = await connection.query(consulta, [data.terminal, data.idApp, data.mac]);
+            const rows = await connection.query(consulta, [data.terminal, data.idApp]);
             if(rows[0][0]){
                 if(rows[0][0].habilitado==1)
                     return true;
@@ -96,6 +96,7 @@ class AppsClienteRepository{
         }
     }
 
+    //Quitar luego
     async InformarActualizacion(DNI:string, idApp:string, version:string): Promise<any>{
         const connection = await db.getConnection();
         
@@ -117,6 +118,48 @@ class AppsClienteRepository{
             connection.release();
         }
     }
+    async InformarVersionBackend(terminal:string, version:string): Promise<any>{
+        const connection = await db.getConnection();
+        
+        try {
+            const consulta = "UPDATE apps_cliente SET " + 
+                             "version_back = ?, " +
+                             "fecha_back = NOW() " +
+                             "WHERE terminal = ? ";
+
+            const parametros = [version, terminal];
+            
+            await connection.query(consulta, parametros);
+
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+    async InformarVersionFrontend(terminal:string, version:string): Promise<any>{
+        const connection = await db.getConnection();
+        
+        try {
+            const consulta = "UPDATE apps_cliente SET " + 
+                             "version_front = ?, " +
+                             "fecha_front = NOW() " +
+                             "WHERE terminal = ? ";
+
+            const parametros = [version, terminal];
+            
+            await connection.query(consulta, parametros);
+
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
 
     async ActualizarEstadoTerminal(data:any){
         const connection = await db.getConnection();
@@ -126,6 +169,22 @@ class AppsClienteRepository{
                            "WHERE DNI = ? && idApp = ?";
 
             await connection.query(consulta, [data.habilitado ? 1 : 0, data.DNI, data.idApp]);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async EliminarTerminal(terminal:string){
+        const connection = await db.getConnection();
+        try {
+            let consulta = "DELETE FROM apps_cliente " + 
+                           "WHERE terminal = ?";
+
+            await connection.query(consulta, [terminal]);
             return "OK";
 
         } catch (error:any) {

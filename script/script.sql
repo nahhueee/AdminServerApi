@@ -30,13 +30,14 @@ CREATE TABLE apps_cliente (
     id INT UNSIGNED AUTO_INCREMENT,
     terminal VARCHAR(36),
     DNI INT,
-    mac VARCHAR(20),
     idApp INT,
-    version VARCHAR(8),
-    actualizacion DATETIME,
+    version_back VARCHAR(10),
+    fecha_back DATETIME,
+    version_front VARCHAR(10),
+    fecha_front DATETIME,
     habilitado BOOLEAN,
 
-    PRIMARY KEY(terminal, DNI, mac, idApp)
+    PRIMARY KEY(terminal, DNI, idApp)
 );
 
 DROP TABLE IF EXISTS aplicaciones;

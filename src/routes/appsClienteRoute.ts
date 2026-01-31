@@ -47,6 +47,23 @@ router.put('/informar', async (req:Request, res:Response) => {
         res.status(500).send(msg);
     }
 });
+router.get('/informar/:tipo/:terminal/:version', async (req:Request, res:Response) => {
+    try{ 
+        if(req.params.tipo == "backend"){
+            res.json(await AppsClienteRepo.InformarVersionBackend(req.params.terminal, req.params.version));
+        }
+        if(req.params.tipo == "frontend"){
+            res.json(await AppsClienteRepo.InformarVersionFrontend(req.params.terminal, req.params.version));
+        }
+
+        res.status(401);
+    } catch(error:any){
+        let msg = "Error al intentar informar la versión de la app.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
 
 router.put('/actualizar-estado', async (req:Request, res:Response) => {
     try{ 
@@ -54,6 +71,17 @@ router.put('/actualizar-estado', async (req:Request, res:Response) => {
 
     } catch(error:any){
         let msg = "Error al intentar actualizar el estado de la terminal.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+router.delete('/eliminar/:terminal', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsClienteRepo.EliminarTerminal(req.params.terminal));
+
+    } catch(error:any){
+        let msg = "Error al intentar eliminar la terminal.";
         logger.error(msg + " " + error.message);
         res.status(500).send(msg);
     }
