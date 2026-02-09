@@ -1,5 +1,6 @@
 {
     "dev": {
+      "serverUrl": "http://localhost:5000",
       "port": 5000,
       "db": {
         "host": "127.0.0.1",
@@ -9,6 +10,7 @@
       }
     },
     "prod": {
+      "serverUrl": "https://creationserver.com",
       "port": 5000,
       "db": {
         "host": "127.0.0.1",

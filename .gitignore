@@ -2,6 +2,7 @@
 
 /backups
 /uploads
+/updates
 
 # Compiled output
 /dist
@@ -11,6 +12,7 @@
 /bazel-out
 /build
 /release
+
 
 # Node
 /node_modules

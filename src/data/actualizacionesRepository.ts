@@ -67,6 +67,24 @@ class ActualizacionesRepository{
     }
 
     //#region ABM
+    
+    async AgregarDesdeCI(data:any): Promise<string>{
+        const connection = await db.getConnection();
+
+        try {
+            const consulta = "INSERT INTO actualizaciones(idApp, resumen, version, link, ambiente, fecha_publicacion, estado, tipo) VALUES (?,?,?,?,?,?,?,?)";
+            const parametros = [data.idApp, data.resumen, data.version, data.link, 'test', moment(data.fecha_publicacion).format('YYYY-MM-DD'), 'borrador', data.tipo];
+            
+            await connection.query(consulta, parametros);
+            return "OK";
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
     async Agregar(data:any): Promise<string>{
         const connection = await db.getConnection();
 
