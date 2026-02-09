@@ -5,6 +5,7 @@ import logger from '../log/logger';
 const router : Router  = Router();
 
 //Obtiene la terminal del cliente asociada a su DNI y su mac, para una app especifica
+//Borrar proximamente
 router.get('/obtener/:dni/:idApp/:mac', async (req:Request, res:Response) => {
     try{ 
         res.json(await AppsClienteRepo.ObtenerAppCliente({dni:req.params.dni, idApp:req.params.idApp, mac: req.params.mac}));
@@ -16,11 +17,23 @@ router.get('/obtener/:dni/:idApp/:mac', async (req:Request, res:Response) => {
 });
 
 //Verifica si el cliente y mac estan habilitados 
+//Borrar proximamente
 router.get('/habilitado/:dni/:idApp/:mac', async (req:Request, res:Response) => {
     try{ 
         res.json(await AppsClienteRepo.EstaHabilitado({dni:req.params.dni, idApp:req.params.idApp, mac: req.params.mac}));
     } catch(error:any){
         let msg = "Error al intentar obtener la terminal del cliente.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+//Verifica si el cliente esta habilitado
+router.get('/habilitado/:terminal/:idApp', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsClienteRepo.TerminalHabilitada({idApp:req.params.idApp, terminal: req.params.terminal}));
+    } catch(error:any){
+        let msg = "Error al intentar obtener la verificacion para el cliente.";
         logger.error(msg + " " + error.message);
         res.status(500).send(msg);
     }
