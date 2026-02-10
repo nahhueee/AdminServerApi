@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 
 class AppsClienteRepository{
 
-    async ObtenerAppCliente(data:any){
+    async ObtenerAppClienteMac(data:any){
         const connection = await db.getConnection();
         
         try {
@@ -17,6 +17,28 @@ class AppsClienteRepository{
                     return rows[0][0]
                 else
                     return {terminal:0, mac:""} //Existe la terminal pero no es correcta la mac
+            }
+
+            return null; //No existe terminal, se procede a generar una 
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async ObtenerAppCliente(data:any){
+        const connection = await db.getConnection();
+        
+        try {
+            let consulta = "SELECT ac.terminal, ac.habilitado, c.DNI, c.nombre cliente FROM apps_cliente ac " +
+                           "INNER JOIN clientes c on ac.DNI = c.DNI " +
+                           "WHERE ac.DNI = ? && ac.idApp = ? ";
+
+            const rows = await connection.query(consulta, [data.dni, data.idApp]);
+            if(rows[0][0]){
+               return rows[0][0]
             }
 
             return null; //No existe terminal, se procede a generar una 

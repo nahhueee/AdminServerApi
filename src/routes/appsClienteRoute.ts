@@ -1,14 +1,24 @@
 import {AppsClienteRepo} from '../data/appsClienteRepository';
-import {ClienteRepo} from '../data/clientesRepository'
 import {Router, Request, Response} from 'express';
 import logger from '../log/logger';
 const router : Router  = Router();
+
+//Obtiene la terminal del cliente asociada a su DNI, para una app especifica
+router.get('/obtener/:dni/:idApp', async (req:Request, res:Response) => {
+    try{ 
+        res.json(await AppsClienteRepo.ObtenerAppCliente({dni:req.params.dni, idApp:req.params.idApp}));
+    } catch(error:any){
+        let msg = "Error al intentar obtener los datos de la app del cliente.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
 
 //Obtiene la terminal del cliente asociada a su DNI y su mac, para una app especifica
 //Borrar proximamente
 router.get('/obtener/:dni/:idApp/:mac', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsClienteRepo.ObtenerAppCliente({dni:req.params.dni, idApp:req.params.idApp, mac: req.params.mac}));
+        res.json(await AppsClienteRepo.ObtenerAppClienteMac({dni:req.params.dni, idApp:req.params.idApp, mac: req.params.mac}));
     } catch(error:any){
         let msg = "Error al intentar obtener los datos de la app del cliente.";
         logger.error(msg + " " + error.message);
