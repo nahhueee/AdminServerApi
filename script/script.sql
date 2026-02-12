@@ -63,6 +63,7 @@ CREATE TABLE actualizaciones (
     resumen VARCHAR(200),
     mejoras VARCHAR(400),
     correcciones VARCHAR(400),
+    firma VARCHAR(250),
     fecha_publicacion  DATE
 );
 

@@ -25,9 +25,9 @@ router.post(
   upload.single('file'),
   async (req, res) => {
     try {
-      const { version, app, idApp, tipo } = req.body;
+      const { version, app, idApp, tipo, firma } = req.body;
 
-      if (!req.file || !version || !app || !idApp || !tipo) {
+      if (!req.file || !version || !app || !idApp || !tipo || !firma) {
         return res.status(400).json({ error: 'Datos incompletos' });
       }
 
@@ -67,7 +67,8 @@ router.post(
         resumen: `Nueva versión ${tipo} ${version}`,
         version,
         link,
-        tipo
+        tipo,
+        firma
       }
       
       const respuesta = await ActualizacionRepo.AgregarDesdeCI(data)

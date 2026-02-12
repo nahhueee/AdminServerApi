@@ -2,6 +2,7 @@ import moment from 'moment';
 import db from '../db';
 import { Actualizacion } from '../models/Actualizacion';
 import { FiltroActualizacion } from '../models/Filtros/FiltroActualizacion';
+import { RowDataPacket } from 'mysql2';
 
 class ActualizacionesRepository{
 
@@ -46,18 +47,52 @@ class ActualizacionesRepository{
         }
     }
 
-    async ObtenerUltimaVersion(idApp, ambiente, tipo){
+    async ObtenerUltimaVersionFrontend(idApp, ambiente, backVersion, appVersion){
+        const connection = await db.getConnection();
+
+        try {
+            //Obtengo la query segun los filtros
+            let sql = "SELECT version, link, resumen, mejoras, correcciones, ambiente, firma " +
+                      "FROM actualizaciones " +
+                      "WHERE idApp = ? AND ambiente = ? AND tipo = 'frontend' AND estado = 'publicada' " +
+                      "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
+
+            const [rows] = await connection.query(sql, [idApp, ambiente]);
+            const datos = [rows][0][0];
+
+            let sql2 = "SELECT min_frontend_version " +
+                        "FROM app_compatibilidad " +
+                        "WHERE idApp = ? AND backend_version = ? " +
+                        "LIMIT 1";
+
+            const [rows2] = await connection.query<RowDataPacket[]>(sql2, [idApp, backVersion]);
+            const frontMinimo = rows2.length > 0
+            ? rows2[0].min_frontend_version
+            : null;
+
+            const requerida = compararVersiones(appVersion, frontMinimo) < 0;
+
+            return { datos, requerida };
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    async ObtenerUltimaVersionBackend(idApp, ambiente){
         const connection = await db.getConnection();
         
         try {
             //Obtengo la query segun los filtros
             let sql = "SELECT version, link, resumen, mejoras, correcciones, fecha_publicacion, ambiente " +
                       "FROM actualizaciones " +
-                      "WHERE idApp = ? AND ambiente = ? AND tipo = ? AND estado = 'publicada' " +
+                      "WHERE idApp = ? AND ambiente = ? AND tipo = 'backend' AND estado = 'publicada' " +
                       "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
 
-            const [rows] = await connection.query(sql, [idApp, ambiente, tipo]);
-            return [rows][0];
+            const [rows] = await connection.query(sql, [idApp, ambiente]);
+            return [rows][0][0];
 
         } catch (error:any) {
             throw error;
@@ -72,8 +107,8 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
 
         try {
-            const consulta = "INSERT INTO actualizaciones(idApp, resumen, version, link, ambiente, fecha_publicacion, estado, tipo) VALUES (?,?,?,?,?,?,?,?)";
-            const parametros = [data.idApp, data.resumen, data.version, data.link, 'test', moment(data.fecha_publicacion).format('YYYY-MM-DD'), 'borrador', data.tipo];
+            const consulta = "INSERT INTO actualizaciones(idApp, resumen, version, link, ambiente, fecha_publicacion, estado, tipo, firma) VALUES (?,?,?,?,?,?,?,?,?)";
+            const parametros = [data.idApp, data.resumen, data.version, data.link, 'test', moment(data.fecha_publicacion).format('YYYY-MM-DD'), 'borrador', data.tipo, data.firma];
             
             await connection.query(consulta, parametros);
             return "OK";
@@ -182,6 +217,26 @@ async function ObtenerQuery(filtros:FiltroActualizacion,esTotal:boolean):Promise
         throw error; 
     }
 }
+
+function compararVersiones(v1:string, v2:string): number {
+
+    const a = v1.split('.').map(n => parseInt(n));
+    const b = v2.split('.').map(n => parseInt(n));
+
+    const maxLen = Math.max(a.length, b.length);
+
+    for(let i=0;i<maxLen;i++){
+
+        const n1 = a[i] || 0;
+        const n2 = b[i] || 0;
+
+        if(n1 > n2) return 1;
+        if(n1 < n2) return -1;
+    }
+
+    return 0;
+}
+
 
 export const ActualizacionRepo = new ActualizacionesRepository();
 
