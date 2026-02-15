@@ -61,7 +61,6 @@ router.post(
         }
       }
 
-
       const data = {
         idApp,
         resumen: `Nueva versión ${tipo} ${version}`,

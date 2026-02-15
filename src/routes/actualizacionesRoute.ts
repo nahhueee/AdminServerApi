@@ -27,9 +27,9 @@ router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
     }
 });
 
-router.get('/ultima-version-frontend/:idApp/:ambiente/:back_version/:app_version', async (req:Request, res:Response) => {
+router.get('/ultima-version-frontend/:idApp/:ambiente', async (req:Request, res:Response) => {
     try{ 
-        res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.ambiente, req.params.back_version, req.params.app_version));
+        res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.ambiente));
     } catch(error:any){
         let msg = "Error al obtener la ultima version de la app.";
         logger.error(msg + " " + error.message);

@@ -47,32 +47,58 @@ class ActualizacionesRepository{
         }
     }
 
-    async ObtenerUltimaVersionFrontend(idApp, ambiente, backVersion, appVersion){
+    async ObtenerUltimaVersionFrontend(idApp, ambiente){
         const connection = await db.getConnection();
 
         try {
             //Obtengo la query segun los filtros
-            let sql = "SELECT version, link, resumen, mejoras, correcciones, ambiente, firma " +
+            let sql = "SELECT version, link, resumen, mejoras, correcciones, ambiente, firma, fecha_publicacion " +
                       "FROM actualizaciones " +
                       "WHERE idApp = ? AND ambiente = ? AND tipo = 'frontend' AND estado = 'publicada' " +
                       "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
 
-            const [rows] = await connection.query(sql, [idApp, ambiente]);
-            const datos = [rows][0][0];
+            const [rows] = await connection.query<RowDataPacket[]>(sql, [idApp, ambiente]);
+            if (!rows || rows.length === 0) {
+                return null; // No hay update
+            }
 
-            let sql2 = "SELECT min_frontend_version " +
-                        "FROM app_compatibilidad " +
-                        "WHERE idApp = ? AND backend_version = ? " +
-                        "LIMIT 1";
+            const datos = rows[0];
 
-            const [rows2] = await connection.query<RowDataPacket[]>(sql2, [idApp, backVersion]);
-            const frontMinimo = rows2.length > 0
-            ? rows2[0].min_frontend_version
-            : null;
 
-            const requerida = compararVersiones(appVersion, frontMinimo) < 0;
+            // let sql2 = "SELECT min_frontend_version " +
+            //             "FROM app_compatibilidad " +
+            //             "WHERE idApp = ? AND backend_version = ? " +
+            //             "LIMIT 1";
 
-            return { datos, requerida };
+            // const [rows2] = await connection.query<RowDataPacket[]>(sql2, [idApp, backVersion]);
+            // const frontMinimo = rows2.length > 0
+            // ? rows2[0].min_frontend_version
+            // : null;
+
+            // //Si la version es mayor o igual a la actual retornar null
+            // const cmpActual = compararVersiones(appVersion, datos.version);
+            // if (cmpActual >= 0) return null;
+
+            // const requerida = frontMinimo
+            // ? compararVersiones(appVersion, frontMinimo) < 0
+            // : false;
+
+
+            const response = {
+                version: datos.version,
+                resumen: datos.resumen,
+                mejoras: datos.mejoras,
+                correcciones: datos.correcciones,
+                pub_date: new Date(datos.fecha_publicacion).toISOString(),
+                platforms: {
+                    "windows-x86_64": {
+                    url: datos.link,
+                    signature: datos.firma
+                    }
+                },
+            };
+
+            return response;
 
         } catch (error:any) {
             throw error;
