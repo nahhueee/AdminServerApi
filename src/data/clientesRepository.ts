@@ -183,7 +183,7 @@ async function ObtenerQuery(filtros:any,esTotal:boolean):Promise<string>{
 
 async function ObtenerApps(connection, DNI:string){
     try {
-        const consulta = "SELECT ac.*, a.nombre nombreApp, a.version versionApp, a.id idApp FROM apps_cliente ac " +
+        const consulta = "SELECT ac.*, ac.id idTerminal, a.nombre nombreApp, a.version versionApp, a.id idApp FROM apps_cliente ac " +
                          "INNER JOIN aplicaciones a on ac.idApp = a.id " +
                          "WHERE ac.DNI = ?" ;
 
@@ -195,6 +195,7 @@ async function ObtenerApps(connection, DNI:string){
                 const row = rows[i];
                 
                 let aplicacion:Appcliente = new Appcliente();
+                aplicacion.id = row['idTerminal'];
                 aplicacion.terminal = row['terminal'];
                 aplicacion.mac = row['mac'];
                 aplicacion.version = row['version'];

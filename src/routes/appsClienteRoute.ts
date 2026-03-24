@@ -99,9 +99,9 @@ router.put('/actualizar-estado', async (req:Request, res:Response) => {
     }
 });
 
-router.delete('/eliminar/:terminal', async (req:Request, res:Response) => {
+router.delete('/eliminar/:idTerminal', async (req:Request, res:Response) => {
     try{ 
-        res.json(await AppsClienteRepo.EliminarTerminal(req.params.terminal));
+        res.json(await AppsClienteRepo.EliminarTerminal(req.params.idTerminal));
 
     } catch(error:any){
         let msg = "Error al intentar eliminar la terminal.";

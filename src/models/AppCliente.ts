@@ -1,6 +1,7 @@
 import { App } from "./App";
 
 export class Appcliente {
+    id?:number;
     terminal?:number;
     mac?:string;
     app?:App;
@@ -10,6 +11,7 @@ export class Appcliente {
 
     constructor(data?: any) {
         if (data) {
+          this.id = data.id;
           this.terminal = data.terminal;
           this.mac = data.mac;
           this.app = data.app;

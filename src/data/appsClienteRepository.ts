@@ -32,7 +32,7 @@ class AppsClienteRepository{
         const connection = await db.getConnection();
         
         try {
-            let consulta = "SELECT ac.terminal, ac.habilitado, c.DNI, c.nombre cliente FROM apps_cliente ac " +
+            let consulta = "SELECT ac.id, ac.terminal, ac.habilitado, c.DNI, c.nombre cliente FROM apps_cliente ac " +
                            "INNER JOIN clientes c on ac.DNI = c.DNI " +
                            "WHERE ac.DNI = ? && ac.idApp = ? ";
 
@@ -200,13 +200,13 @@ class AppsClienteRepository{
         }
     }
 
-    async EliminarTerminal(terminal:string){
+    async EliminarTerminal(idTerminal:string){
         const connection = await db.getConnection();
         try {
             let consulta = "DELETE FROM apps_cliente " + 
-                           "WHERE terminal = ?";
+                           "WHERE id = ?";
 
-            await connection.query(consulta, [terminal]);
+            await connection.query(consulta, [idTerminal]);
             return "OK";
 
         } catch (error:any) {

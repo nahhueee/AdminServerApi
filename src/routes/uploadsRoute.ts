@@ -25,11 +25,13 @@ router.post(
   upload.single('file'),
   async (req, res) => {
     try {
-      const { version, app, idApp, tipo, firma } = req.body;
+      const { version, app, idApp, tipo } = req.body;
 
-      if (!req.file || !version || !app || !idApp || !tipo || !firma) {
+      if (!req.file || !version || !app || !idApp || !tipo) {
         return res.status(400).json({ error: 'Datos incompletos' });
       }
+
+      const firma = req.body.firma || "";
 
       const ruta = path.join(__dirname, '../../updates/', app, tipo);
       fs.mkdirSync(ruta, { recursive: true });
