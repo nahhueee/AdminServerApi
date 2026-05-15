@@ -47,42 +47,43 @@ class ActualizacionesRepository{
         }
     }
 
-    async ObtenerUltimaVersionFrontend(idApp, ambiente){
+    async ObtenerUltimaVersionFrontend(idApp, backendVersion){
         const connection = await db.getConnection();
 
         try {
-            //Obtengo la query segun los filtros
-            let sql = "SELECT version, link, resumen, mejoras, correcciones, ambiente, firma, fecha_publicacion " +
-                      "FROM actualizaciones " +
-                      "WHERE idApp = ? AND ambiente = ? AND tipo = 'frontend' AND estado = 'publicada' " +
-                      "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
+            // La distribución se rige únicamente por estado.
+            // `ambiente` ya no participa como filtro — el parámetro se recibe
+            // en la ruta por compatibilidad con clientes existentes pero se ignora.
+            let sql = `
+                        SELECT
+                            a.version,
+                            a.link,
+                            a.resumen,
+                            a.mejoras,
+                            a.correcciones,
+                            a.firma,
+                            a.fecha_publicacion
+                        FROM actualizaciones a
+                        INNER JOIN compatibilidad_front_backend c
+                            ON c.idApp = a.idApp
+                            AND c.version_frontend = a.version
+                            AND c.version_backend = ?
+                        WHERE
+                            a.idApp = ?
+                            AND a.tipo = 'frontend'
+                            AND a.estado = 'produccion'
+                        ORDER BY
+                            a.fecha_publicacion DESC,
+                            a.id DESC
+                        LIMIT 1
+                    `;
 
-            const [rows] = await connection.query<RowDataPacket[]>(sql, [idApp, ambiente]);
+            const [rows] = await connection.query<RowDataPacket[]>(sql, [backendVersion, idApp]);
             if (!rows || rows.length === 0) {
                 return null; // No hay update
             }
 
             const datos = rows[0];
-
-
-            // let sql2 = "SELECT min_frontend_version " +
-            //             "FROM app_compatibilidad " +
-            //             "WHERE idApp = ? AND backend_version = ? " +
-            //             "LIMIT 1";
-
-            // const [rows2] = await connection.query<RowDataPacket[]>(sql2, [idApp, backVersion]);
-            // const frontMinimo = rows2.length > 0
-            // ? rows2[0].min_frontend_version
-            // : null;
-
-            // //Si la version es mayor o igual a la actual retornar null
-            // const cmpActual = compararVersiones(appVersion, datos.version);
-            // if (cmpActual >= 0) return null;
-
-            // const requerida = frontMinimo
-            // ? compararVersiones(appVersion, frontMinimo) < 0
-            // : false;
-
 
             const response = {
                 version: datos.version,
@@ -107,18 +108,60 @@ class ActualizacionesRepository{
         }
     }
 
-    async ObtenerUltimaVersionBackend(idApp, ambiente){
+    async ObtenerUltimaVersionBackend(idApp, terminal){
         const connection = await db.getConnection();
-        
-        try {
-            //Obtengo la query segun los filtros
-            let sql = "SELECT version, link, resumen, mejoras, correcciones, fecha_publicacion, ambiente " +
-                      "FROM actualizaciones " +
-                      "WHERE idApp = ? AND ambiente = ? AND tipo = 'backend' AND estado = 'publicada' " +
-                      "ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
 
-            const [rows] = await connection.query(sql, [idApp, ambiente]);
-            return [rows][0][0];
+        try {
+            // Distribución basada únicamente en estado:
+            //   produccion → todos los clientes habilitados
+            //   canary     → solo terminales en canary_terminals activa
+            // `ambiente` no participa como filtro — el parámetro se recibe
+            // en la ruta por compatibilidad con clientes existentes pero se ignora.
+            const sql = `
+                SELECT
+                    version,
+                    link,
+                    resumen,
+                    mejoras,
+                    correcciones,
+                    fecha_publicacion,
+                    estado,
+                    requiere_npm_install,
+                    tamano_bytes
+                FROM actualizaciones
+                WHERE
+                    idApp = ?
+                    AND tipo = 'backend'
+                    AND (
+                        estado = 'produccion'
+                        OR (
+                            estado = 'canary'
+                            AND EXISTS (
+                                SELECT 1 FROM canary_terminals ct
+                                WHERE ct.terminal = ? AND ct.idApp = actualizaciones.idApp AND ct.activo = 1
+                            )
+                        )
+                    )
+                ORDER BY fecha_publicacion DESC, id DESC
+                LIMIT 1
+            `;
+
+            const [rows] = await connection.query(sql, [idApp, terminal]);
+            const row = rows[0];
+
+            if (!row) return null;
+
+            return {
+                version:            row.version,
+                link:               row.link,
+                resumen:            row.resumen,
+                mejoras:            row.mejoras,
+                correcciones:       row.correcciones,
+                fecha_publicacion:  row.fecha_publicacion,
+                estado:             row.estado,
+                requiereNpmInstall: row.requiere_npm_install === 1,
+                tamanoBytes:        row.tamano_bytes ?? null,
+            };
 
         } catch (error:any) {
             throw error;

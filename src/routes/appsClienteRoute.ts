@@ -100,7 +100,7 @@ router.put('/actualizar-estado', async (req:Request, res:Response) => {
 });
 
 router.delete('/eliminar/:idTerminal', async (req:Request, res:Response) => {
-    try{ 
+    try{
         res.json(await AppsClienteRepo.EliminarTerminal(req.params.idTerminal));
 
     } catch(error:any){
@@ -110,6 +110,46 @@ router.delete('/eliminar/:idTerminal', async (req:Request, res:Response) => {
     }
 });
 
+// Ordena un rollback para una terminal específica.
+// La terminal recibirá la instrucción en la respuesta del próximo heartbeat.
+router.post('/rollback', async (req:Request, res:Response) => {
+    try{
+        const { terminal, idApp, versionOrigen } = req.body;
+        if (!terminal || !idApp || !versionOrigen) {
+            return res.status(400).send('terminal, idApp y versionOrigen son requeridos');
+        }
+        await AppsClienteRepo.OrdenarRollback(terminal, idApp, versionOrigen);
+        return res.json('OK');
+    } catch(error:any){
+        let msg = "Error al ordenar el rollback.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+// Cancela la orden de rollback pendiente de una terminal
+router.delete('/rollback/:terminal/:idApp', async (req:Request, res:Response) => {
+    try{
+        await AppsClienteRepo.CancelarRollback(req.params.terminal, req.params.idApp);
+        return res.json('OK');
+    } catch(error:any){
+        let msg = "Error al cancelar el rollback.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+// Panel de flota: estado de todas las terminales de una app
+router.get('/flota/:idApp', async (req:Request, res:Response) => {
+    try{
+        res.json(await AppsClienteRepo.ObtenerFlota(req.params.idApp));
+    } catch(error:any){
+        let msg = "Error al obtener la flota de la app.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
 
 // Export the router
-export default router; 
+export default router;

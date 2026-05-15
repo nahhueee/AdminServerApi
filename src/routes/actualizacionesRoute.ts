@@ -27,9 +27,10 @@ router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
     }
 });
 
-router.get('/ultima-version-frontend/:idApp/:ambiente', async (req:Request, res:Response) => {
-    try{ 
-        res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.ambiente));
+router.get('/ultima-version-frontend/:idApp/:ambiente/:backendVersion', async (req:Request, res:Response) => {
+    // :ambiente se mantiene en la URL por compatibilidad con clientes existentes pero no se usa.
+    try{
+        res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.backendVersion));
     } catch(error:any){
         let msg = "Error al obtener la ultima version de la app.";
         logger.error(msg + " " + error.message);
@@ -40,9 +41,10 @@ router.get('/ultima-version-frontend/:idApp/:ambiente', async (req:Request, res:
 router.get('/ultima-version-backend/:idApp/:ambiente/:terminal', async (req:Request, res:Response) => {
     try{ 
 
+        // :ambiente se mantiene en la URL por compatibilidad con clientes existentes pero no se usa.
         const habilitado = await AppsClienteRepo.TerminalHabilitada({terminal:req.params.terminal, idApp:req.params.idApp});
         if(habilitado){
-            res.json(await ActualizacionRepo.ObtenerUltimaVersionBackend(req.params.idApp, req.params.ambiente));
+            res.json(await ActualizacionRepo.ObtenerUltimaVersionBackend(req.params.idApp, req.params.terminal));
         }else{
             return res.status(403).json({
                 error: true,

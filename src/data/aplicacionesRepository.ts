@@ -46,11 +46,14 @@ class AplicacionesRepository{
 
             const rows = await connection.query(consulta, [id]);
             let app:App = new App();
-            app.id = rows[0][0].id;
-            app.portada = rows[0][0].portada;
-            app.nombre = rows[0][0].nombre;
-            app.clientes = rows[0][0].total_clientes;
-            app.version = await ObtenerUltimaVersion(connection, app.id);
+            app.id          = rows[0][0].id;
+            app.portada     = rows[0][0].portada;
+            app.nombre      = rows[0][0].nombre;
+            app.clientes    = rows[0][0].total_clientes;
+            app.versionBackend  = await ObtenerUltimaVersionPorTipo(connection, app.id, 'backend');
+            app.versionFrontend = await ObtenerUltimaVersionPorTipo(connection, app.id, 'frontend');
+            // version legacy — apunta al backend para no romper clientes existentes
+            app.version = app.versionBackend ?? '1.0.0';
 
             return app;
 
@@ -63,16 +66,29 @@ class AplicacionesRepository{
    
 }
 
+// Usada en ObtenerAplicaciones (listado) — devuelve última versión sin filtrar por tipo
 async function ObtenerUltimaVersion(connection, idApp) {
     try {
-        let consulta = "SELECT version FROM actualizaciones WHERE idApp = ? ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
+        const consulta = "SELECT version FROM actualizaciones WHERE idApp = ? ORDER BY fecha_publicacion DESC, id DESC LIMIT 1";
         const rows = await connection.query(consulta, [idApp]);
-        if(rows[0] && rows[0].length > 0){
-            return rows[0][0].version;
-        }else{
-            return "1.0.0";
-        }
-    }catch(error){
+        return (rows[0] && rows[0].length > 0) ? rows[0][0].version : '1.0.0';
+    } catch(error) {
+        throw error;
+    }
+}
+
+// Usada en ObtenerAplicacion (detalle) — devuelve la última versión en produccion por tipo
+async function ObtenerUltimaVersionPorTipo(connection, idApp, tipo: 'backend' | 'frontend'): Promise<string | undefined> {
+    try {
+        const consulta = `
+            SELECT version FROM actualizaciones
+            WHERE idApp = ? AND tipo = ? AND estado = 'produccion'
+            ORDER BY fecha_publicacion DESC, id DESC
+            LIMIT 1
+        `;
+        const rows = await connection.query(consulta, [idApp, tipo]);
+        return (rows[0] && rows[0].length > 0) ? rows[0][0].version : undefined;
+    } catch(error) {
         throw error;
     }
 }

@@ -203,7 +203,7 @@ class AppsClienteRepository{
     async EliminarTerminal(idTerminal:string){
         const connection = await db.getConnection();
         try {
-            let consulta = "DELETE FROM apps_cliente " + 
+            let consulta = "DELETE FROM apps_cliente " +
                            "WHERE id = ?";
 
             await connection.query(consulta, [idTerminal]);
@@ -212,6 +212,119 @@ class AppsClienteRepository{
         } catch (error:any) {
             throw error;
         } finally{
+            connection.release();
+        }
+    }
+
+    async OrdenarRollback(terminal: string, idApp: string, versionOrigen: string): Promise<void> {
+        const connection = await db.getConnection();
+        try {
+            // Cancela órdenes previas pendientes antes de insertar la nueva.
+            await connection.query(
+                `UPDATE ordenes_rollback SET estado = 'cancelada'
+                 WHERE terminal = ? AND idApp = ? AND estado = 'pendiente'`,
+                [terminal, idApp]
+            );
+            await connection.query(
+                `INSERT INTO ordenes_rollback (terminal, idApp, version_origen)
+                 VALUES (?, ?, ?)`,
+                [terminal, idApp, versionOrigen]
+            );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    async CancelarRollback(terminal: string, idApp: string): Promise<void> {
+        const connection = await db.getConnection();
+        try {
+            await connection.query(
+                `UPDATE ordenes_rollback SET estado = 'cancelada'
+                 WHERE terminal = ? AND idApp = ? AND estado = 'pendiente'`,
+                [terminal, idApp]
+            );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    async ObtenerFlota(idApp: string) {
+        const connection = await db.getConnection();
+        try {
+            const sql = `
+                SELECT
+                    ac.terminal,
+                    ac.habilitado,
+                    ac.ultimo_heartbeat,
+                    c.nombre            AS cliente,
+                    c.DNI,
+                    h.version_back,
+                    h.version_front,
+                    h.db_status,
+                    h.tiempo_activo,
+                    h.errores_recientes,
+                    h.terminales_lan_activas,
+                    h.ultimo_backup_fecha,
+                    h.ultimo_backup_ok,
+                    COALESCE(e.total_errores, 0) AS total_errores,
+                    ev.tipo          AS evento_tipo,
+                    ev.version       AS evento_version,
+                    ev.fecha         AS evento_fecha,
+                    COALESCE(bk.total_backups, 0) AS total_backups,
+                    bk.ultimo_backup,
+                    br_lat.validacion_estado  AS backup_validacion_estado,
+                    br_lat.validacion_detalle AS backup_validacion_detalle
+                FROM apps_cliente ac
+                INNER JOIN clientes c ON ac.DNI = c.DNI
+                LEFT JOIN heartbeats h
+                    ON  h.terminal = ac.terminal
+                    AND h.idApp    = ac.idApp
+                    AND h.id = (
+                        SELECT MAX(id) FROM heartbeats
+                        WHERE terminal = ac.terminal AND idApp = ac.idApp
+                    )
+                LEFT JOIN (
+                    SELECT terminal, idApp, COUNT(*) AS total_errores
+                    FROM errores_instalaciones
+                    WHERE idApp = ?
+                    GROUP BY terminal, idApp
+                ) e ON e.terminal = ac.terminal AND e.idApp = ac.idApp
+                LEFT JOIN eventos_actualizacion ev
+                    ON ev.terminal = ac.terminal
+                    AND ev.idApp   = ac.idApp
+                    AND ev.id = (
+                        SELECT MAX(id) FROM eventos_actualizacion
+                        WHERE terminal = ac.terminal AND idApp = ac.idApp
+                    )
+                LEFT JOIN (
+                    SELECT DNI, idApp,
+                           COUNT(*)   AS total_backups,
+                           MAX(fecha) AS ultimo_backup
+                    FROM backups_registro
+                    WHERE idApp = ?
+                    GROUP BY DNI, idApp
+                ) bk ON bk.DNI = c.DNI AND bk.idApp = ac.idApp
+                LEFT JOIN backups_registro br_lat
+                    ON  br_lat.DNI   = c.DNI
+                    AND br_lat.idApp = ac.idApp
+                    AND br_lat.id = (
+                        SELECT MAX(id) FROM backups_registro
+                        WHERE DNI = c.DNI AND idApp = ac.idApp
+                    )
+                WHERE ac.idApp = ?
+                ORDER BY c.nombre ASC
+            `;
+
+            const [rows] = await connection.query(sql, [idApp, idApp, idApp]);
+            return rows;
+
+        } catch (error: any) {
+            throw error;
+        } finally {
             connection.release();
         }
     }

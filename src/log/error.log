@@ -57,3 +57,7 @@
 {"level":"error","message":"Error al obtener la ultima version de la app. Cannot read properties of null (reading 'split')","timestamp":"2026-02-11T02:25:44.517Z"}
 {"level":"error","message":"Error al obtener la ultima version de la app. Cannot read properties of null (reading 'split')","timestamp":"2026-02-11T02:26:21.702Z"}
 {"level":"error","message":"Error al obtener la ultima version de la app. Cannot read properties of null (reading 'split')","timestamp":"2026-02-11T02:26:55.082Z"}
+{"level":"error","message":"Error al obtener la flota de la app. Table 'dbadminserver.eventos_actualizacion' doesn't exist","timestamp":"2026-05-13T11:40:11.248Z"}
+{"level":"error","message":"Error al obtener la flota de la app. Table 'dbadminserver.eventos_actualizacion' doesn't exist","timestamp":"2026-05-13T11:40:17.237Z"}
+{"level":"error","message":"Error al obtener la flota de la app. Table 'dbadminserver.backups_registro' doesn't exist","timestamp":"2026-05-13T12:39:13.785Z"}
+{"level":"error","message":"Error al obtener la flota de la app. Table 'dbadminserver.backups_registro' doesn't exist","timestamp":"2026-05-13T14:19:56.385Z"}
