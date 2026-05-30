@@ -2,16 +2,9 @@ import db from '../db';
 
 class ErroresRepository {
 
-    /**
-     * Registra un batch de errores de una instalación.
-     * Si el mismo código ya existe para esa terminal, incrementa cantidad
-     * y actualiza fecha_ultimo y mensaje.
-     */
     async registrarBatch(terminal: string, idApp: number, errores: any[]): Promise<void> {
         if (!errores || errores.length === 0) return;
-
         const connection = await db.getConnection();
-
         try {
             for (const error of errores) {
                 await connection.query(
@@ -40,10 +33,6 @@ class ErroresRepository {
         }
     }
 
-    /**
-     * Verifica si un batch_id ya fue procesado para esta terminal.
-     * Usado para garantizar idempotencia ante reenvíos por timeout.
-     */
     async verificarBatchProcesado(terminal: string, batchId: string): Promise<boolean> {
         const connection = await db.getConnection();
         try {
@@ -57,10 +46,6 @@ class ErroresRepository {
         }
     }
 
-    /**
-     * Registra un batch_id como procesado para esta terminal.
-     * INSERT IGNORE: si por race condition se inserta dos veces, no falla.
-     */
     async registrarBatchId(terminal: string, batchId: string): Promise<void> {
         const connection = await db.getConnection();
         try {
@@ -73,16 +58,67 @@ class ErroresRepository {
         }
     }
 
-    /**
-     * Elimina registros de batches_procesados con más de 7 días de antigüedad.
-     * Llamado por el cron de limpieza en index.ts.
-     */
     async limpiarBatchesViejos(): Promise<void> {
         const connection = await db.getConnection();
         try {
             await connection.query(
                 'DELETE FROM batches_procesados WHERE fecha < DATE_SUB(NOW(), INTERVAL 7 DAY)'
             );
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Errores agregados por codigo para una app.
+    // Suma cantidades y cuenta instalaciones (DNI) distintas afectadas.
+    async ObtenerErroresAgregados(idApp: number): Promise<any[]> {
+        const connection = await db.getConnection();
+        try {
+            const [rows]: any = await connection.query(
+                `SELECT
+                    ei.codigo,
+                    SUM(ei.cantidad)       AS cantidad_total,
+                    COUNT(DISTINCT ac.DNI) AS instalaciones_afectadas,
+                    MIN(ei.fecha_primero)  AS primera_ocurrencia,
+                    MAX(ei.fecha_ultimo)   AS ultima_ocurrencia
+                FROM errores_instalaciones ei
+                INNER JOIN apps_cliente ac
+                    ON ei.terminal = ac.terminal AND ei.idApp = ac.idApp
+                WHERE ei.idApp = ?
+                GROUP BY ei.codigo
+                ORDER BY cantidad_total DESC`,
+                [idApp]
+            );
+            return rows;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Detalle de un codigo de error: que instalaciones lo reportaron y cuantas veces.
+    // Agrupa por DNI (instalacion) para una fila por comercio.
+    async ObtenerDetalleError(idApp: number, codigo: string): Promise<any[]> {
+        const connection = await db.getConnection();
+        try {
+            const [rows]: any = await connection.query(
+                `SELECT
+                    c.nombre               AS cliente,
+                    ac.DNI,
+                    SUM(ei.cantidad)       AS cantidad,
+                    MIN(ei.fecha_primero)  AS primera_ocurrencia,
+                    MAX(ei.fecha_ultimo)   AS ultima_ocurrencia,
+                    MAX(ei.mensaje)        AS mensaje
+                FROM errores_instalaciones ei
+                INNER JOIN apps_cliente ac
+                    ON ei.terminal = ac.terminal AND ei.idApp = ac.idApp
+                INNER JOIN clientes c
+                    ON ac.DNI = c.DNI
+                WHERE ei.idApp = ? AND ei.codigo = ?
+                GROUP BY ac.DNI, c.nombre
+                ORDER BY cantidad DESC`,
+                [idApp, codigo]
+            );
+            return rows;
         } finally {
             connection.release();
         }

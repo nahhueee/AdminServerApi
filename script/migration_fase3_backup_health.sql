@@ -23,3 +23,7 @@ ALTER TABLE backups_registro
 -- Nota: el estado de backup se calcula dinámicamente en appsClienteRepository
 -- (ObtenerFlota), no en una vista, para mantener consistencia con el resto del
 -- codebase (no se usan vistas en ningún otro módulo).
+
+
+alter table apps_cliente modify version_back VARCHAR(10) DEFAULT "";
+alter table apps_cliente modify version_back VARCHAR(10) DEFAULT "";

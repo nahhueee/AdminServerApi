@@ -1,0 +1,8 @@
+{
+    "watch": ["src"],
+    "ignore": [
+        "src/log/error.log"
+    ],
+    "ext": "ts,json",
+    "exec": "tsc && ts-node src/index.ts"
+}

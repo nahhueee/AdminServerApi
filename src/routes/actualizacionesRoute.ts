@@ -27,8 +27,7 @@ router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
     }
 });
 
-router.get('/ultima-version-frontend/:idApp/:ambiente/:backendVersion', async (req:Request, res:Response) => {
-    // :ambiente se mantiene en la URL por compatibilidad con clientes existentes pero no se usa.
+router.get('/ultima-version-frontend/:idApp/:backendVersion', async (req:Request, res:Response) => {
     try{
         res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.backendVersion));
     } catch(error:any){
@@ -38,19 +37,33 @@ router.get('/ultima-version-frontend/:idApp/:ambiente/:backendVersion', async (r
     }
 });
 
-router.get('/ultima-version-backend/:idApp/:ambiente/:terminal', async (req:Request, res:Response) => {
+router.get('/ultima-version-backend/:idApp/:terminal', async (req:Request, res:Response) => {
     try{ 
+        const habilitado = await AppsClienteRepo.TerminalHabilitada({
+        terminal: req.params.terminal,
+        idApp: req.params.idApp
+    });
 
-        // :ambiente se mantiene en la URL por compatibilidad con clientes existentes pero no se usa.
-        const habilitado = await AppsClienteRepo.TerminalHabilitada({terminal:req.params.terminal, idApp:req.params.idApp});
-        if(habilitado){
-            res.json(await ActualizacionRepo.ObtenerUltimaVersionBackend(req.params.idApp, req.params.terminal));
-        }else{
-            return res.status(403).json({
-                error: true,
-                mensaje: 'Terminal no habilitada para actualizar'
-            });
-        }
+    if (!habilitado) {
+        return res.status(403).json({
+            error: true,
+            mensaje: 'Terminal no habilitada para actualizar'
+        });
+    }
+
+    const version = await ActualizacionRepo.ObtenerUltimaVersionBackend(
+        req.params.idApp,
+        req.params.terminal
+    );
+
+    if (!version) {
+        return res.status(404).json({
+            error: true,
+            mensaje: 'No hay versiones disponibles'
+        });
+    }
+
+    return res.json(version);
 
     } catch(error:any){
         let msg = "Error al obtener la ultima version de la app.";

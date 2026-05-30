@@ -4,7 +4,7 @@
   "description": "Servidor destinado a la gestion de aplicaciones de creationcode",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc && nodemon src/index.ts",
+    "dev": "nodemon",
     "tsc": "tsc",
     "build": "tsc && node setup.js"
   },

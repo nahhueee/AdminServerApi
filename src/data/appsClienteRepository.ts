@@ -94,13 +94,12 @@ class AppsClienteRepository{
  
     async GenerarAppCliente(data:any): Promise<any>{
         const connection = await db.getConnection();
-        
         try {
             let existeAppCliente = await ValidarExistencia(connection, data);
             if(!existeAppCliente){//Verificamos si ya existe una app para este cliente
                 const terminal = randomUUID();
-                const consulta = "INSERT INTO apps_cliente(DNI, mac, idApp, terminal, habilitado) VALUES (?,?,?,?,?)";
-                const parametros = [data.dni, data.mac, data.idApp, terminal, 1];
+                const consulta = "INSERT INTO apps_cliente(DNI, idApp, terminal, habilitado) VALUES (?,?,?,?)";
+                const parametros = [data.dni, data.idApp, terminal, 1];
                 
                 //Insertamos la app 
                 await connection.query(consulta, parametros);
