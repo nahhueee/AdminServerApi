@@ -9,4 +9,7 @@ export class Actualizacion {
     ambiente?:string;
     estado?:string;
     tipo?:string;
+    requiereNpmInstall?: boolean;
+    tamanoBytes?: number;
+    versionesBackendCompatibles?: string[];
 }

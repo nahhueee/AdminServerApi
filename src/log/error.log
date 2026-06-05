@@ -69,3 +69,5 @@
 {"level":"error","message":"Error al intentar generar una nueva app para el cliente. Field 'version_front' doesn't have a default value","timestamp":"2026-05-27T17:37:03.429Z"}
 {"level":"error","message":"Error al registrar batch de errores. Incorrect datetime value: '2026-05-27T16:11:06.386Z' for column 'fecha_primero' at row 1","timestamp":"2026-05-27T17:45:01.465Z"}
 {"level":"error","message":"Error al registrar batch de errores. Incorrect datetime value: '2026-05-27T16:11:06.386Z' for column 'fecha_primero' at row 1","timestamp":"2026-05-27T18:00:01.152Z"}
+{"level":"error","message":"Error al obtener la flota de la app. Unknown column 'h.confirmacion_front_pendiente' in 'field list'","timestamp":"2026-06-05T03:10:40.141Z"}
+{"level":"error","message":"Error al obtener versiones backend. Expression #1 of ORDER BY clause is not in SELECT list, references column 'dbadminserver.actualizaciones.fecha_publicacion' which is not in SELECT list; this is incompatible with DISTINCT","timestamp":"2026-06-05T03:17:33.990Z"}

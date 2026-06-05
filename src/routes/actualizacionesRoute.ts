@@ -5,6 +5,24 @@ import { AppsClienteRepo } from '../data/appsClienteRepository';
 const router : Router  = Router();
 
 //#region OBTENER
+router.get('/versiones-backend/:idApp', async (req:Request, res:Response) => {
+    try {
+        res.json(await ActualizacionRepo.ObtenerVersionesBackend(Number(req.params.idApp)));
+    } catch(error:any){
+        logger.error("Error al obtener versiones backend. " + error.message);
+        res.status(500).send("Error al obtener versiones backend.");
+    }
+});
+
+router.get('/compatibilidades/:idApp/:versionFrontend', async (req:Request, res:Response) => {
+    try {
+        res.json(await ActualizacionRepo.ObtenerCompatibilidades(Number(req.params.idApp), req.params.versionFrontend));
+    } catch(error:any){
+        logger.error("Error al obtener compatibilidades. " + error.message);
+        res.status(500).send("Error al obtener compatibilidades.");
+    }
+});
+
 router.post('/obtener', async (req:Request, res:Response) => {
     try{ 
         res.json(await ActualizacionRepo.Obtener(req.body));
@@ -29,7 +47,12 @@ router.get('/ultima-version/:idApp', async (req:Request, res:Response) => {
 
 router.get('/ultima-version-frontend/:idApp/:backendVersion', async (req:Request, res:Response) => {
     try{
-        res.json(await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.backendVersion));
+        const terminal = (req.query.terminal as string) ?? null;
+        const release = await ActualizacionRepo.ObtenerUltimaVersionFrontend(req.params.idApp, req.params.backendVersion, terminal);
+        // Sin update disponible → 204 No Content (contrato que entiende el updater
+        // de Tauri). Devolver `200 null` rompe la deserialización del cliente.
+        if (!release) return res.status(204).send();
+        res.json(release);
     } catch(error:any){
         let msg = "Error al obtener la ultima version de la app.";
         logger.error(msg + " " + error.message);

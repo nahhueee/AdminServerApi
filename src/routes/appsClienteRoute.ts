@@ -139,6 +139,35 @@ router.delete('/rollback/:terminal/:idApp', async (req:Request, res:Response) =>
     }
 });
 
+// Ordena un rollback de FRONTEND para una terminal.
+// Requiere la versión destino y la URL del ZIP del installer.
+router.post('/rollback-front', async (req:Request, res:Response) => {
+    try{
+        const { terminal, idApp, versionDestino, zipUrl } = req.body;
+        if (!terminal || !idApp || !versionDestino || !zipUrl) {
+            return res.status(400).send('terminal, idApp, versionDestino y zipUrl son requeridos');
+        }
+        await AppsClienteRepo.OrdenarRollbackFront(terminal, idApp, versionDestino, zipUrl);
+        return res.json('OK');
+    } catch(error:any){
+        let msg = "Error al ordenar el rollback de front.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
+// Cancela la orden de rollback de front pendiente de una terminal
+router.delete('/rollback-front/:terminal/:idApp', async (req:Request, res:Response) => {
+    try{
+        await AppsClienteRepo.CancelarRollbackFront(req.params.terminal, req.params.idApp);
+        return res.json('OK');
+    } catch(error:any){
+        let msg = "Error al cancelar el rollback de front.";
+        logger.error(msg + " " + error.message);
+        res.status(500).send(msg);
+    }
+});
+
 // Panel de flota: estado de todas las terminales de una app
 router.get('/flota/:idApp', async (req:Request, res:Response) => {
     try{

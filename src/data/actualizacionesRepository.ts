@@ -8,7 +8,7 @@ class ActualizacionesRepository{
 
      async Obtener(filtros:any){
         const connection = await db.getConnection();
-        
+
         try {
              //Obtengo la query segun los filtros
             let queryRegistros = await ObtenerQuery(filtros,false);
@@ -28,7 +28,7 @@ class ActualizacionesRepository{
 
     async ObtenerUltimaVersionApp(idApp){
         const connection = await db.getConnection();
-        
+
         try {
             const filtro = new FiltroActualizacion();
             filtro.idApp = idApp;
@@ -47,13 +47,10 @@ class ActualizacionesRepository{
         }
     }
 
-    async ObtenerUltimaVersionFrontend(idApp, backendVersion){
+    async ObtenerUltimaVersionFrontend(idApp, backendVersion, terminal: string | null = null){
         const connection = await db.getConnection();
 
         try {
-            // La distribución se rige únicamente por estado.
-            // `ambiente` ya no participa como filtro — el parámetro se recibe
-            // en la ruta por compatibilidad con clientes existentes pero se ignora.
             let sql = `
                         SELECT
                             a.version,
@@ -71,14 +68,23 @@ class ActualizacionesRepository{
                         WHERE
                             a.idApp = ?
                             AND a.tipo = 'frontend'
-                            AND a.estado = 'produccion'
+                            AND (
+                                a.estado = 'produccion'
+                                OR (
+                                    a.estado = 'canary' AND ? IS NOT NULL
+                                    AND EXISTS (
+                                        SELECT 1 FROM canary_terminals ct
+                                        WHERE ct.terminal = ? AND ct.idApp = a.idApp AND ct.activo = 1
+                                    )
+                                )
+                            )
                         ORDER BY
                             a.fecha_publicacion DESC,
                             a.id DESC
                         LIMIT 1
                     `;
 
-            const [rows] = await connection.query<RowDataPacket[]>(sql, [backendVersion, idApp]);
+            const [rows] = await connection.query<RowDataPacket[]>(sql, [backendVersion, idApp, terminal, terminal]);
             if (!rows || rows.length === 0) {
                 return null; // No hay update
             }
@@ -112,11 +118,6 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
 
         try {
-            // Distribución basada únicamente en estado:
-            //   produccion → todos los clientes habilitados
-            //   canary     → solo terminales en canary_terminals activa
-            // `ambiente` no participa como filtro — el parámetro se recibe
-            // en la ruta por compatibilidad con clientes existentes pero se ignora.
             const sql = `
                 SELECT
                     version,
@@ -170,15 +171,57 @@ class ActualizacionesRepository{
         }
     }
 
+    // Devuelve versiones backend en estado produccion/canary para el selector del modal de frontend
+    async ObtenerVersionesBackend(idApp: number): Promise<{ version: string, estado: string }[]> {
+        const connection = await db.getConnection();
+
+        try {
+            const sql = `
+                SELECT version, estado, MAX(fecha_publicacion) AS fp
+                FROM actualizaciones
+                WHERE idApp = ?
+                  AND tipo = 'backend'
+                  AND (estado = 'produccion' OR estado = 'canary')
+                GROUP BY version, estado
+                ORDER BY fp DESC, MAX(id) DESC
+            `;
+            const [rows] = await connection.query<RowDataPacket[]>(sql, [idApp]);
+            return (rows as any[]).map(r => ({ version: r.version, estado: r.estado }));
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
+    // Devuelve las versiones backend con las que un frontend ya está marcado como compatible
+    async ObtenerCompatibilidades(idApp: number, versionFrontend: string): Promise<string[]> {
+        const connection = await db.getConnection();
+
+        try {
+            const [rows] = await connection.query<RowDataPacket[]>(
+                'SELECT version_backend FROM compatibilidad_front_backend WHERE idApp = ? AND version_frontend = ?',
+                [idApp, versionFrontend]
+            );
+            return (rows as any[]).map(r => r.version_backend);
+
+        } catch (error:any) {
+            throw error;
+        } finally{
+            connection.release();
+        }
+    }
+
     //#region ABM
-    
+
     async AgregarDesdeCI(data:any): Promise<string>{
         const connection = await db.getConnection();
 
         try {
             const consulta = "INSERT INTO actualizaciones(idApp, resumen, version, link, ambiente, fecha_publicacion, estado, tipo, firma) VALUES (?,?,?,?,?,?,?,?,?)";
             const parametros = [data.idApp, data.resumen, data.version, data.link, 'test', moment(data.fecha_publicacion).format('YYYY-MM-DD'), 'borrador', data.tipo, data.firma];
-            
+
             await connection.query(consulta, parametros);
             return "OK";
 
@@ -193,10 +236,39 @@ class ActualizacionesRepository{
         const connection = await db.getConnection();
 
         try {
-            const consulta = "INSERT INTO actualizaciones(idApp, resumen, mejoras, correcciones, version, link, ambiente, fecha_publicacion, estado, tipo) VALUES (?,?,?,?,?,?,?,?,?,?)";
-            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.ambiente, moment(data.fecha_publicacion).format('YYYY-MM-DD'), data.estado, data.tipo];
-            
-            await connection.query(consulta, parametros);
+            if (data.tipo === 'backend') {
+                const consulta = `INSERT INTO actualizaciones
+                    (idApp, resumen, mejoras, correcciones, version, link, ambiente, fecha_publicacion, estado, tipo, requiere_npm_install, tamano_bytes)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
+                const parametros = [
+                    data.idApp, data.resumen, data.mejoras, data.correcciones,
+                    data.version, data.link, 'prod',
+                    moment(data.fechaPublicacion).format('YYYY-MM-DD'),
+                    data.estado, data.tipo,
+                    data.requiereNpmInstall ? 1 : 0,
+                    data.tamanoBytes ?? null
+                ];
+                await connection.query(consulta, parametros);
+
+            } else {
+                // frontend
+                const consulta = `INSERT INTO actualizaciones
+                    (idApp, resumen, mejoras, correcciones, version, link, ambiente, fecha_publicacion, estado, tipo)
+                    VALUES (?,?,?,?,?,?,?,?,?,?)`;
+                const parametros = [
+                    data.idApp, data.resumen, data.mejoras, data.correcciones,
+                    data.version, data.link, 'prod',
+                    moment(data.fechaPublicacion).format('YYYY-MM-DD'),
+                    data.estado, data.tipo
+                ];
+                await connection.query(consulta, parametros);
+
+                // Sincronizar compatibilidades
+                if (data.versionesBackendCompatibles?.length) {
+                    await this._sincronizarCompatibilidades(connection, data.idApp, data.version, data.versionesBackendCompatibles);
+                }
+            }
+
             return "OK";
 
         } catch (error:any) {
@@ -208,12 +280,50 @@ class ActualizacionesRepository{
 
     async Modificar(data:any): Promise<string>{
         const connection = await db.getConnection();
-        
+
         try {
-            const consulta = "UPDATE actualizaciones SET idApp = ?, resumen = ?, mejoras = ?, correcciones = ?, version = ?, link = ?, ambiente = ?, fecha_publicacion = ?, estado = ?, tipo = ? WHERE id = ?";
-            const parametros = [data.idApp, data.resumen, data.mejoras, data.correcciones, data.version, data.link, data.ambiente, moment(data.fecha_publicacion).format('YYYY-MM-DD'), data.estado, data.tipo, data.id];  
-            await connection.query(consulta, parametros);
+            if (data.tipo === 'backend') {
+                const consulta = `UPDATE actualizaciones SET
+                    idApp = ?, resumen = ?, mejoras = ?, correcciones = ?,
+                    version = ?, link = ?, ambiente = ?, fecha_publicacion = ?,
+                    estado = ?, tipo = ?,
+                    requiere_npm_install = ?, tamano_bytes = ?
+                    WHERE id = ?`;
+                const parametros = [
+                    data.idApp, data.resumen, data.mejoras, data.correcciones,
+                    data.version, data.link, data.ambiente ?? 'prod',
+                    moment(data.fechaPublicacion).format('YYYY-MM-DD'),
+                    data.estado, data.tipo,
+                    data.requiereNpmInstall ? 1 : 0,
+                    data.tamanoBytes ?? null,
+                    data.id
+                ];
+                await connection.query(consulta, parametros);
+
+            } else {
+                // frontend
+                const consulta = `UPDATE actualizaciones SET
+                    idApp = ?, resumen = ?, mejoras = ?, correcciones = ?,
+                    version = ?, link = ?, ambiente = ?, fecha_publicacion = ?,
+                    estado = ?, tipo = ?
+                    WHERE id = ?`;
+                const parametros = [
+                    data.idApp, data.resumen, data.mejoras, data.correcciones,
+                    data.version, data.link, data.ambiente ?? 'prod',
+                    moment(data.fechaPublicacion).format('YYYY-MM-DD'),
+                    data.estado, data.tipo, data.id
+                ];
+                await connection.query(consulta, parametros);
+
+                // Reemplazar compatibilidades para esta versión
+                // Nota: si la versión cambió, las compat de la versión anterior quedan huérfanas (edge case aceptable)
+                if (data.versionesBackendCompatibles != null) {
+                    await this._sincronizarCompatibilidades(connection, data.idApp, data.version, data.versionesBackendCompatibles);
+                }
+            }
+
             return "OK";
+
         } catch (error:any) {
             throw error;
         } finally{
@@ -223,7 +333,7 @@ class ActualizacionesRepository{
 
     async Eliminar(id:string): Promise<string>{
         const connection = await db.getConnection();
-        
+
         try {
             await connection.query("DELETE FROM actualizaciones WHERE id = ?", [id]);
             return "OK";
@@ -234,6 +344,27 @@ class ActualizacionesRepository{
             connection.release();
         }
     }
+
+    // DELETE + INSERT de compatibilidades para (idApp, versionFrontend)
+    private async _sincronizarCompatibilidades(
+        connection: any,
+        idApp: number,
+        versionFrontend: string,
+        versiones: string[]
+    ): Promise<void> {
+        await connection.query(
+            'DELETE FROM compatibilidad_front_backend WHERE idApp = ? AND version_frontend = ?',
+            [idApp, versionFrontend]
+        );
+        if (versiones.length > 0) {
+            const values = versiones.map(v => [idApp, versionFrontend, v]);
+            await connection.query(
+                'INSERT INTO compatibilidad_front_backend (idApp, version_frontend, version_backend) VALUES ?',
+                [values]
+            );
+        }
+    }
+
     //#endregion
 }
 
@@ -243,13 +374,13 @@ async function ObtenerQuery(filtros:FiltroActualizacion,esTotal:boolean):Promise
         let query:string;
         let filtro:string = "";
         let paginado:string = "";
-    
+
         let count:string = "";
         let endCount:string = "";
         //#endregion
 
         // #region FILTROS
-        if (filtros.idApp && filtros.idApp != 0) 
+        if (filtros.idApp && filtros.idApp != 0)
             filtro += " AND idApp = " + filtros.idApp;
         if(filtros.ambiente && filtros.ambiente != "")
             filtro += " AND ambiente = '" + filtros.ambiente +"'";
@@ -269,7 +400,7 @@ async function ObtenerQuery(filtros:FiltroActualizacion,esTotal:boolean):Promise
             if (filtros.tamanioPagina != null)
                 paginado = " LIMIT " + filtros.tamanioPagina + " OFFSET " + ((filtros.pagina - 1) * filtros.tamanioPagina);
         }
-            
+
         //Arma la Query con el paginado y los filtros correspondientes
         query = count +
             " SELECT * " +
@@ -281,32 +412,11 @@ async function ObtenerQuery(filtros:FiltroActualizacion,esTotal:boolean):Promise
             endCount;
 
         return query;
-            
+
     } catch (error) {
-        throw error; 
+        throw error;
     }
-}
-
-function compararVersiones(v1:string, v2:string): number {
-
-    const a = v1.split('.').map(n => parseInt(n));
-    const b = v2.split('.').map(n => parseInt(n));
-
-    const maxLen = Math.max(a.length, b.length);
-
-    for(let i=0;i<maxLen;i++){
-
-        const n1 = a[i] || 0;
-        const n2 = b[i] || 0;
-
-        if(n1 > n2) return 1;
-        if(n1 < n2) return -1;
-    }
-
-    return 0;
 }
 
 
 export const ActualizacionRepo = new ActualizacionesRepository();
-
-

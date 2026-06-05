@@ -15,7 +15,11 @@ router.post('/', async (req: Request, res: Response) => {
         }
 
         const respuesta = await HeartbeatRepo.registrar(req.body);
-        return res.json({ ok: true, rollback: respuesta.rollback });
+        return res.json({
+            ok:            true,
+            rollback:      respuesta.rollback,
+            rollbackFront: respuesta.rollbackFront,
+        });
 
     } catch (error: any) {
         logger.error('Error al registrar heartbeat. ' + error.message);

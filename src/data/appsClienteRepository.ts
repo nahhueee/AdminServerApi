@@ -251,6 +251,44 @@ class AppsClienteRepository{
         }
     }
 
+    // Rollback de FRONTEND. La terminal recibe la orden en la respuesta del
+    // próximo heartbeat (rollbackFront) y descarga el ZIP del installer.
+    async OrdenarRollbackFront(terminal: string, idApp: string, versionDestino: string, zipUrl: string): Promise<void> {
+        const connection = await db.getConnection();
+        try {
+            // Cancela órdenes previas pendientes antes de insertar la nueva.
+            await connection.query(
+                `UPDATE ordenes_rollback_front SET estado = 'cancelada'
+                 WHERE terminal = ? AND idApp = ? AND estado = 'pendiente'`,
+                [terminal, idApp]
+            );
+            await connection.query(
+                `INSERT INTO ordenes_rollback_front (terminal, idApp, version_destino, zip_url)
+                 VALUES (?, ?, ?, ?)`,
+                [terminal, idApp, versionDestino, zipUrl]
+            );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    async CancelarRollbackFront(terminal: string, idApp: string): Promise<void> {
+        const connection = await db.getConnection();
+        try {
+            await connection.query(
+                `UPDATE ordenes_rollback_front SET estado = 'cancelada'
+                 WHERE terminal = ? AND idApp = ? AND estado = 'pendiente'`,
+                [terminal, idApp]
+            );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
     async ObtenerFlota(idApp: string) {
         const connection = await db.getConnection();
         try {
@@ -269,10 +307,17 @@ class AppsClienteRepository{
                     h.terminales_lan_activas,
                     h.ultimo_backup_fecha,
                     h.ultimo_backup_ok,
+                    h.confirmacion_front_pendiente,
                     COALESCE(e.total_errores, 0) AS total_errores,
-                    ev.tipo          AS evento_tipo,
-                    ev.version       AS evento_version,
-                    ev.fecha         AS evento_fecha,
+                    evb.tipo         AS evento_back_tipo,
+                    evb.version      AS evento_back_version,
+                    evb.fecha        AS evento_back_fecha,
+                    evf.tipo         AS evento_front_tipo,
+                    evf.maquina      AS evento_front_maquina,
+                    evf.version      AS evento_front_version,
+                    evf.error        AS evento_front_error,
+                    evf.fecha        AS evento_front_fecha,
+                    (ct.terminal IS NOT NULL) AS es_canary,
                     COALESCE(bk.total_backups, 0) AS total_backups,
                     bk.ultimo_backup,
                     br_lat.validacion_estado  AS backup_validacion_estado,
@@ -292,13 +337,26 @@ class AppsClienteRepository{
                     WHERE idApp = ?
                     GROUP BY terminal, idApp
                 ) e ON e.terminal = ac.terminal AND e.idApp = ac.idApp
-                LEFT JOIN eventos_actualizacion ev
-                    ON ev.terminal = ac.terminal
-                    AND ev.idApp   = ac.idApp
-                    AND ev.id = (
+                LEFT JOIN eventos_actualizacion evb
+                    ON evb.terminal = ac.terminal
+                    AND evb.idApp   = ac.idApp
+                    AND evb.id = (
                         SELECT MAX(id) FROM eventos_actualizacion
                         WHERE terminal = ac.terminal AND idApp = ac.idApp
+                          AND tipo NOT LIKE 'front\\_%'
                     )
+                LEFT JOIN eventos_actualizacion evf
+                    ON evf.terminal = ac.terminal
+                    AND evf.idApp   = ac.idApp
+                    AND evf.id = (
+                        SELECT MAX(id) FROM eventos_actualizacion
+                        WHERE terminal = ac.terminal AND idApp = ac.idApp
+                          AND tipo LIKE 'front\\_%'
+                    )
+                LEFT JOIN canary_terminals ct
+                    ON  ct.terminal = ac.terminal
+                    AND ct.idApp    = ac.idApp
+                    AND ct.activo   = 1
                 LEFT JOIN (
                     SELECT DNI, idApp,
                            COUNT(*)   AS total_backups,
